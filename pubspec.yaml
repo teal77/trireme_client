@@ -1,0 +1,13 @@
+name: trireme_client
+description: Deluge client written in Dart
+version: 0.0.1
+author:
+homepage:
+
+dependencies:
+  rencode: 0.0.2
+
+dev_dependencies:
+  test: ^0.12.33
+  build_runner: ^0.8.1
+  source_gen: ^0.8.0
