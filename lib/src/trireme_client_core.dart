@@ -17,14 +17,11 @@
  */
 
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
-
-import 'package:rencode/rencode.dart';
 
 import '../events.dart';
 import '../trireme_client.dart';
+
+import 'deluge_connection.dart';
 
 class DelugeClient {
   bool _log = false;
@@ -47,7 +44,7 @@ class DelugeClient {
   String daemonVersionName;
 
   int _requestId = 0;
-  _DelugeConnection _connection;
+  DelugeConnection _connection;
   Map<int, _Request> _requests = {};
   StreamController<DelugeRpcEvent> _streamController;
 
@@ -63,13 +60,12 @@ class DelugeClient {
 
   void _connect() {
     if (_connection == null) {
-      var connectionFactory = new _ConnectionFactory(
+      var connectionFactory = new ConnectionFactory(
           host, port, timeoutDuration, _receive, _errorCallback);
-      _connecting =
-          connectionFactory.getConnection().then<int>((connection) {
-            _connection = connection;
-            return login();
-          });
+      _connecting = connectionFactory.getConnection().then<int>((connection) {
+        _connection = connection;
+        return login();
+      });
     } else {
       _connecting = _connection.connect().then<int>((dynamic _) => login());
     }
@@ -90,8 +86,7 @@ class DelugeClient {
       }
 
       return _sendCall(name, args, kwargs);
-    }
-    );
+    });
   }
 
   Stream<DelugeRpcEvent> delugeEvents() {
@@ -99,7 +94,7 @@ class DelugeClient {
   }
 
   Future<int> login() async {
-    if (_connection is _Deluge1Connection) {
+    if (_connection is Deluge1Connection) {
       return await _sendCall<int>("daemon.login", [username, _password]);
     } else {
       return await _sendCall<int>("daemon.login", [username, _password],
@@ -113,8 +108,9 @@ class DelugeClient {
       //Captures all exceptions in this block and throws them through our Future.
 
       _requestId++;
-      var payload = [_requestId, name]..add(args ?? emptyList)..add(
-          kwargs ?? emptyMap);
+      var payload = [_requestId, name]
+        ..add(args ?? emptyList)
+        ..add(kwargs ?? emptyMap);
       _connection.send(payload);
 
       _registerForTimeout(_requestId);
@@ -140,7 +136,7 @@ class DelugeClient {
       int requestId = response[1];
       var r = _requests.remove(requestId);
 
-      if (_connection is _Deluge1Connection) {
+      if (_connection is Deluge1Connection) {
         List<Object> delugeRpcError = response[2];
         r?.onError(delugeRpcError[0] as String, delugeRpcError[1] as String,
             delugeRpcError[2] as String);
@@ -214,226 +210,6 @@ class _Request<T> {
   void _dispatchError(DelugeRpcError error) {
     if (!completer.isCompleted) {
       completer.completeError(error);
-    }
-  }
-}
-
-class _ConnectionFactory {
-  final String host;
-  final int port;
-  final Duration timeout;
-  final _ResponseCallback responseCallback;
-  final _ErrorCallback errorCallback;
-
-  final Completer<_DelugeConnection> _completer =
-  new Completer<_DelugeConnection>();
-
-  int _requestId = -100;
-  _DelugeConnection deluge1Connection;
-  _DelugeConnection deluge2Connection;
-
-  _ConnectionFactory(this.host, this.port, this.timeout, this.responseCallback,
-      this.errorCallback);
-
-  Future<_DelugeConnection> getConnection() {
-    deluge1Connection =
-    new _Deluge1Connection(host, port, timeout, _receiveDeluge1, _error);
-    deluge2Connection =
-    new _Deluge2Connection(host, port, timeout, _receiveDeluge2, _error);
-
-    _getDaemonInfo(deluge1Connection);
-    _getDaemonInfo(deluge2Connection);
-    return _completer.future;
-  }
-
-  void _getDaemonInfo(_DelugeConnection connection) async {
-    try {
-      await connection.connect();
-      connection
-          .send([_requestId++, "daemon.info", <dynamic>[], <dynamic, dynamic>{}]);
-    } catch (e) {
-      if (!_completer.isCompleted) {
-        _completer.completeError(e);
-      }
-    }
-  }
-
-  void _receiveDeluge1(Object response) async {
-    deluge1Connection.disconnect();
-    deluge2Connection.disconnect();
-
-    var connection = new _Deluge1Connection(
-        host, port, timeout, responseCallback, errorCallback);
-    await connection.connect();
-    _completer.complete(connection);
-  }
-
-  void _receiveDeluge2(Object response) async {
-    deluge1Connection.disconnect();
-    deluge2Connection.disconnect();
-
-    var connection = new _Deluge2Connection(
-        host, port, timeout, responseCallback, errorCallback);
-    await connection.connect();
-    _completer.complete(connection);
-  }
-
-  void _error(Object error) {
-    throw error;
-  }
-}
-
-typedef void _ResponseCallback(Object response);
-typedef void _ErrorCallback(Object error);
-
-abstract class _DelugeConnection {
-  final String host;
-  final int port;
-  final Duration timeout;
-  final _ResponseCallback responseCallback;
-  final _ErrorCallback _errorCallback;
-
-  SecureSocket _socket;
-  BytesBuilder _partialData = new BytesBuilder();
-
-  Codec<Object, List<int>> _codec = new RencodeCodec().fuse(new ZLibCodec());
-
-  _DelugeConnection(this.host, this.port, this.timeout, this.responseCallback,
-      this._errorCallback);
-
-  Future connect() async {
-    _socket = await SecureSocket.connect(host, port,
-        timeout: timeout, onBadCertificate: (c) => true);
-
-    _socket.listen((response) {
-      receive(response);
-    }, onError: (Object e) {
-      _errorCallback(e);
-    }, onDone: () {
-      _socket?.destroy();
-      _socket = null;
-    });
-  }
-
-  void receive(List<int> response);
-
-  void send(Object request);
-
-  bool isConnected() => _socket != null;
-
-  void disconnect() {
-    _socket?.destroy();
-    _socket = null;
-  }
-}
-
-class _Deluge1Connection extends _DelugeConnection {
-  _Deluge1Connection(String host, int port, Duration timeout,
-      _ResponseCallback responseCallback, _ErrorCallback errorCallback)
-      : super(host, port, timeout, responseCallback, errorCallback);
-
-  void send(Object object) {
-    _socket.add(_codec.encode([object]));
-  }
-
-  void receive(List<int> response) {
-    try {
-      Object responseObj;
-      try {
-        responseObj = _codec.decode(response);
-
-        /*The response was valid, so clear any partial data stored from the
-        previous request, that request will be timed out by deluge client*/
-        _partialData.clear();
-
-        responseCallback(responseObj);
-        return;
-      } on FormatException {
-        //nop
-      } catch (e) {
-        //catch zlib error
-        if (e.toString().contains("Filter error")) {
-          //nop
-        } else {
-          rethrow;
-        }
-      }
-
-      /*The response is not valid zlib or rencode, so add it to partial data
-      and try decoding*/
-      _partialData.add(response);
-      responseObj = _codec.decode(_partialData.toBytes());
-
-      /*The response together with previous response was valid, so we
-      can return that object and clear partialData*/
-      _partialData.clear();
-      responseCallback(responseObj);
-    } on FormatException {
-      /*The response is still not valid, wait for next response so that
-      it can be added to paritalData and checked again.
-      Eventually, a proper response will be formed, which will clear
-      the partial data or a full response will be received which will also clear
-      the partial data.
-
-      This will not handle out of order responses, they will be timed out by
-      DelugeClient*/
-    } catch (e) {
-      //catch zlib error
-      if (e.toString().contains("Filter error")) {
-        //nop
-      } else {
-        rethrow;
-      }
-    }
-  }
-}
-
-class _Deluge2Connection extends _DelugeConnection {
-  static const int headerSize = 5;
-
-  static final int headerChar = ascii
-      .encode("D")
-      .first;
-
-  int _responseLength;
-
-  _Deluge2Connection(String host, int port, Duration timeout,
-      _ResponseCallback responseCallback, _ErrorCallback errorCallback)
-      : super(host, port, timeout, responseCallback, errorCallback);
-
-  void send(Object object) {
-    var request = _codec.encode([object]);
-    _socket.add(_getRequestHeader(request.length));
-    _socket.add(_codec.encode([object]));
-  }
-
-  List<int> _getRequestHeader(int requestLength) {
-    BytesBuilder bb = new BytesBuilder();
-    bb.addByte(headerChar);
-
-    var bd = new ByteData(4);
-    bd.setInt32(0, requestLength);
-    bb.add(bd.buffer.asUint8List());
-    return bb.takeBytes();
-  }
-
-  void receive(List<int> response) {
-    if (response.first == headerChar && response.length == headerSize) {
-      //clear any previous partial data, that request will timeout
-      _partialData.clear();
-
-      _responseLength =
-          new Uint8List.fromList(response.getRange(1, headerSize).toList())
-              .buffer
-              .asByteData()
-              .getInt32(0);
-      return;
-    }
-
-    _partialData.add(response);
-
-    if (_partialData.length >= _responseLength) {
-      responseCallback(_codec.decode(_partialData.takeBytes()));
     }
   }
 }
