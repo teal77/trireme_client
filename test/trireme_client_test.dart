@@ -30,6 +30,10 @@ void main() {
     await client.init();
   });
 
+  tearDown(() {
+    client.dispose();
+  });
+
   test("Test", () async {
     Object res = await client.daemonInfo();
     print(res);
@@ -52,7 +56,9 @@ void main() {
     print(res);
   });
 
-  tearDown(() {
+  test("A client which was disposed is initialised again", () async {
     client.dispose();
+    client.init();
+    print(await client.daemonInfo());
   });
 }
