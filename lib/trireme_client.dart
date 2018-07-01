@@ -32,12 +32,15 @@ abstract class TriremeClient {
   bool isDisposed;
 
   factory TriremeClient(String username, String password, String host,
-      {int port = 58846}) {
-    return new _$TriremeClientImpl(username, password, host, port);
+      {int port = 58846, List<int> pinnedCertificate}) {
+    return new _$TriremeClientImpl(
+        username, password, host, port, pinnedCertificate);
   }
 
-  TriremeClient._(String username, String _password, String host, int port)
-      : _client = new DelugeClient(host, port, username, _password);
+  TriremeClient._(String username, String _password, String host, int port,
+      List<int> pinnedCertificate)
+      : _client = new DelugeClient(host, port, username, _password,
+            pinnedCertificate: pinnedCertificate);
 
   Future init() async {
     isDisposed = true;

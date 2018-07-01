@@ -18,7 +18,6 @@
 
 import 'dart:async';
 
-import 'package:build/build.dart';
 import 'package:build_runner/build_runner.dart';
 import 'package:source_gen/source_gen.dart';
 

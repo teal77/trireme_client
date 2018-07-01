@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import 'dart:io';
+
 import 'package:test/test.dart';
 
 import 'package:trireme_client/trireme_client.dart';
@@ -23,42 +25,53 @@ import 'package:trireme_client/trireme_client.dart';
 import 'config.dart';
 
 void main() {
-  TriremeClient client;
+  group("", () {
+    TriremeClient client;
 
-  setUp(() async {
-    client = new TriremeClient(username, password, host);
-    await client.init();
+    setUp(() async {
+      client = new TriremeClient(username, password, host);
+      await client.init();
+    });
+
+    tearDown(() {
+      client.dispose();
+    });
+
+    test("Test", () async {
+      Object res = await client.daemonInfo();
+      print(res);
+      var torrents = await client.getSessionState();
+      var tid = torrents.isEmpty ? "" : torrents[0];
+      print(torrents);
+      res = await client.getSessionStatus();
+      print(res);
+      res = await client.getTorrentsList({"state": "Seeding"});
+      print(res);
+      res = await client.getFilterTree();
+      print(res);
+      res = await client.getTorrentStatus(tid, []);
+      print(res);
+      res = await client.getTorrentDetails(tid);
+      print(res);
+      res = await client.getTorrentOptions(tid);
+      print(res);
+      res = await client.getConfig();
+      print(res);
+    });
+
+    test("A client which was disposed is initialised again", () async {
+      client.dispose();
+      client.init();
+      print(await client.daemonInfo());
+    });
   });
 
-  tearDown(() {
+  test("A client with a pinned certificate fails when attempting to connect "
+      "with a wrong certificate", () async {
+    var testCert = await new File("test/testcert.pem").readAsString(); //some random certificate
+    var client = new TriremeClient(username, password, host,
+        pinnedCertificate: testCert.codeUnits);
+    expect(client.init(), throwsA(new TypeMatcher<HandshakeException>()));
     client.dispose();
-  });
-
-  test("Test", () async {
-    Object res = await client.daemonInfo();
-    print(res);
-    var torrents = await client.getSessionState();
-    var tid = torrents.isEmpty ? "" : torrents[0];
-    print(torrents);
-    res = await client.getSessionStatus();
-    print(res);
-    res = await client.getTorrentsList({"state" : "Seeding"});
-    print(res);
-    res = await client.getFilterTree();
-    print(res);
-    res = await client.getTorrentStatus(tid, []);
-    print(res);
-    res = await client.getTorrentDetails(tid);
-    print(res);
-    res = await client.getTorrentOptions(tid);
-    print(res);
-    res = await client.getConfig();
-    print(res);
-  });
-
-  test("A client which was disposed is initialised again", () async {
-    client.dispose();
-    client.init();
-    print(await client.daemonInfo());
   });
 }

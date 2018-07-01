@@ -7,8 +7,9 @@ part of trireme_client;
 // **************************************************************************
 
 class _$TriremeClientImpl extends TriremeClient {
-  _$TriremeClientImpl(String username, String password, String host, int port)
-      : super._(username, password, host, port);
+  _$TriremeClientImpl(String username, String password, String host, int port,
+      List<int> pinnedCert)
+      : super._(username, password, host, port, pinnedCert);
   Future<bool> _registerForEvents(List<String> events) async {
     bool result =
         await _client.rpcCall<bool>('daemon.set_event_interest', [events]);

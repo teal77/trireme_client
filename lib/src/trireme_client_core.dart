@@ -39,9 +39,7 @@ class DelugeClient {
   final int port;
   final String username;
   final String _password;
-
-  int delugeVersion;
-  String daemonVersionName;
+  final List<int> pinnedCertificate;
 
   int _requestId = 0;
   DelugeConnection _connection;
@@ -50,7 +48,8 @@ class DelugeClient {
 
   Future _connecting;
 
-  DelugeClient(this.host, this.port, this.username, this._password) {
+  DelugeClient(this.host, this.port, this.username, this._password,
+      {this.pinnedCertificate}) {
     init();
   }
 
@@ -61,7 +60,7 @@ class DelugeClient {
   void _connect() {
     if (_connection == null) {
       var connectionFactory = new ConnectionFactory(
-          host, port, timeoutDuration, _receive, _errorCallback);
+          host, port, pinnedCertificate, timeoutDuration, _receive, _errorCallback);
       _connecting = connectionFactory.getConnection().then<int>((connection) {
         _connection = connection;
         return login();

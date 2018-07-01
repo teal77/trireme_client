@@ -26,25 +26,26 @@ import 'package:rencode/rencode.dart';
 class ConnectionFactory {
   final String host;
   final int port;
+  final List<int> pinnedCertificate;
   final Duration timeout;
   final ResponseCallback responseCallback;
   final ErrorCallback errorCallback;
 
   final Completer<DelugeConnection> _completer =
-  new Completer<DelugeConnection>();
+      new Completer<DelugeConnection>();
 
   int _requestId = -100;
   DelugeConnection deluge1Connection;
   DelugeConnection deluge2Connection;
 
-  ConnectionFactory(this.host, this.port, this.timeout, this.responseCallback,
-      this.errorCallback);
+  ConnectionFactory(this.host, this.port, this.pinnedCertificate, this.timeout,
+      this.responseCallback, this.errorCallback);
 
   Future<DelugeConnection> getConnection() {
-    deluge1Connection =
-    new Deluge1Connection(host, port, timeout, _receiveDeluge1, _error);
-    deluge2Connection =
-    new Deluge2Connection(host, port, timeout, _receiveDeluge2, _error);
+    deluge1Connection = new Deluge1Connection(
+        host, port, pinnedCertificate, timeout, _receiveDeluge1, _error);
+    deluge2Connection = new Deluge2Connection(
+        host, port, pinnedCertificate, timeout, _receiveDeluge2, _error);
 
     _getDaemonInfo(deluge1Connection);
     _getDaemonInfo(deluge2Connection);
@@ -54,11 +55,11 @@ class ConnectionFactory {
   void _getDaemonInfo(DelugeConnection connection) async {
     try {
       await connection.connect();
-      connection
-          .send([_requestId++, "daemon.info", <dynamic>[], <dynamic, dynamic>{}]);
-    } catch (e) {
+      connection.send(
+          [_requestId++, "daemon.info", <dynamic>[], <dynamic, dynamic>{}]);
+    } catch (e, s) {
       if (!_completer.isCompleted) {
-        _completer.completeError(e);
+        _completer.completeError(e, s);
       }
     }
   }
@@ -67,20 +68,28 @@ class ConnectionFactory {
     deluge1Connection.disconnect();
     deluge2Connection.disconnect();
 
-    var connection = new Deluge1Connection(
-        host, port, timeout, responseCallback, errorCallback);
-    await connection.connect();
-    _completer.complete(connection);
+    try {
+      var connection = new Deluge1Connection(host, port, pinnedCertificate,
+          timeout, responseCallback, errorCallback);
+      await connection.connect();
+      _completer.complete(connection);
+    } catch (e, s) {
+      _completer.completeError(e, s);
+    }
   }
 
   void _receiveDeluge2(Object response) async {
     deluge1Connection.disconnect();
     deluge2Connection.disconnect();
 
-    var connection = new Deluge2Connection(
-        host, port, timeout, responseCallback, errorCallback);
-    await connection.connect();
-    _completer.complete(connection);
+    try {
+      var connection = new Deluge2Connection(host, port, pinnedCertificate,
+          timeout, responseCallback, errorCallback);
+      await connection.connect();
+      _completer.complete(connection);
+    } catch (e, s) {
+      _completer.completeError(e, s);
+    }
   }
 
   void _error(Object error) {
@@ -94,8 +103,9 @@ typedef void ErrorCallback(Object error);
 abstract class DelugeConnection {
   final String host;
   final int port;
+  final List<int> pinnedCertificate;
   final Duration timeout;
-  final ResponseCallback responseCallback;
+  final ResponseCallback _responseCallback;
   final ErrorCallback _errorCallback;
 
   SecureSocket _socket;
@@ -103,12 +113,28 @@ abstract class DelugeConnection {
 
   Codec<Object, List<int>> _codec = new RencodeCodec().fuse(new ZLibCodec());
 
-  DelugeConnection(this.host, this.port, this.timeout, this.responseCallback,
-      this._errorCallback);
+  DelugeConnection(
+    this.host,
+    this.port,
+    this.pinnedCertificate,
+    this.timeout,
+    this._responseCallback,
+    this._errorCallback,
+  );
 
   Future connect() async {
+    SecurityContext securityContext;
+    if (pinnedCertificate != null && pinnedCertificate.isNotEmpty) {
+      securityContext = new SecurityContext();
+      securityContext.setTrustedCertificatesBytes(pinnedCertificate);
+    } else {
+      securityContext = SecurityContext.defaultContext;
+    }
+
     _socket = await SecureSocket.connect(host, port,
-        timeout: timeout, onBadCertificate: (c) => true);
+        timeout: timeout,
+        context: securityContext,
+        onBadCertificate: _onBadCertificate);
 
     _socket.listen((response) {
       receive(response);
@@ -118,6 +144,12 @@ abstract class DelugeConnection {
       _socket?.destroy();
       _socket = null;
     });
+  }
+
+  bool _onBadCertificate(X509Certificate badCert) {
+    //if we dont have a pinned certificate, accept all certs.
+    //this is necessary because the Deluge daemon uses self signed certificates
+    return pinnedCertificate == null || pinnedCertificate.isEmpty;
   }
 
   void receive(List<int> response);
@@ -133,9 +165,14 @@ abstract class DelugeConnection {
 }
 
 class Deluge1Connection extends DelugeConnection {
-  Deluge1Connection(String host, int port, Duration timeout,
-      ResponseCallback responseCallback, ErrorCallback errorCallback)
-      : super(host, port, timeout, responseCallback, errorCallback);
+  Deluge1Connection(
+      String host,
+      int port,
+      List<int> pinnedCert,
+      Duration timeout,
+      ResponseCallback responseCallback,
+      ErrorCallback errorCallback)
+      : super(host, port, pinnedCert, timeout, responseCallback, errorCallback);
 
   void send(Object object) {
     _socket.add(_codec.encode([object]));
@@ -151,7 +188,7 @@ class Deluge1Connection extends DelugeConnection {
         previous request, that request will be timed out by deluge client*/
         _partialData.clear();
 
-        responseCallback(responseObj);
+        _responseCallback(responseObj);
         return;
       } on FormatException {
         //nop
@@ -172,7 +209,7 @@ class Deluge1Connection extends DelugeConnection {
       /*The response together with previous response was valid, so we
       can return that object and clear partialData*/
       _partialData.clear();
-      responseCallback(responseObj);
+      _responseCallback(responseObj);
     } on FormatException {
       /*The response is still not valid, wait for next response so that
       it can be added to paritalData and checked again.
@@ -196,15 +233,18 @@ class Deluge1Connection extends DelugeConnection {
 class Deluge2Connection extends DelugeConnection {
   static const int headerSize = 5;
 
-  static final int headerChar = ascii
-      .encode("D")
-      .first;
+  static final int headerChar = ascii.encode("D").first;
 
   int _responseLength;
 
-  Deluge2Connection(String host, int port, Duration timeout,
-      ResponseCallback responseCallback, ErrorCallback errorCallback)
-      : super(host, port, timeout, responseCallback, errorCallback);
+  Deluge2Connection(
+      String host,
+      int port,
+      List<int> pinnedCert,
+      Duration timeout,
+      ResponseCallback responseCallback,
+      ErrorCallback errorCallback)
+      : super(host, port, pinnedCert, timeout, responseCallback, errorCallback);
 
   void send(Object object) {
     var request = _codec.encode([object]);
@@ -238,7 +278,7 @@ class Deluge2Connection extends DelugeConnection {
     _partialData.add(response);
 
     if (_partialData.length >= _responseLength) {
-      responseCallback(_codec.decode(_partialData.takeBytes()));
+      _responseCallback(_codec.decode(_partialData.takeBytes()));
     }
   }
 }
