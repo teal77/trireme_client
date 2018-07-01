@@ -23,6 +23,102 @@ import 'dart:typed_data';
 
 import 'package:rencode/rencode.dart';
 
+class DaemonDetector {
+  static const Duration timeout = const Duration(seconds: 30);
+
+  final String host;
+  final int port;
+
+  Completer<DaemonDetails> _completer = new Completer();
+  int _requestId = 0;
+  DelugeConnection _deluge1Connection;
+  DelugeConnection _deluge2Connection;
+
+  DaemonDetector(this.host, this.port);
+
+  Future<DaemonDetails> detect() {
+    _deluge1Connection = new Deluge1Connection(
+        host, port, null, timeout, _receiveDeluge1, _error);
+    _deluge2Connection = new Deluge2Connection(
+        host, port, null, timeout, _receiveDeluge2, _error);
+
+    _getDaemonInfo(_deluge1Connection);
+    _getDaemonInfo(_deluge2Connection);
+    return _completer.future;
+  }
+
+  void _getDaemonInfo(DelugeConnection connection) async {
+    try {
+      await connection.connect();
+      var payload = <dynamic>[
+        _requestId++,
+        "daemon.info",
+        <dynamic>[],
+        <dynamic, dynamic>{}
+      ];
+      connection.send(payload);
+    } catch (e, s) {
+      if (!_completer.isCompleted) {
+        _completer.completeError(e, s);
+      }
+    }
+  }
+
+  void _receiveDeluge1(Object response) async {
+    var cert = _deluge1Connection.certificate;
+    _deluge1Connection.disconnect();
+    _deluge2Connection.disconnect();
+    _dispatchResult(cert, _getDaemonVersion(response), true);
+  }
+
+  void _receiveDeluge2(Object response) async {
+    var cert = _deluge2Connection.certificate;
+    _deluge1Connection.disconnect();
+    _deluge2Connection.disconnect();
+    _dispatchResult(cert, _getDaemonVersion(response), false);
+  }
+
+  void _error(Object error) {
+    if (!_completer.isCompleted) {
+      _completer.completeError(error);
+    }
+  }
+
+  String _getDaemonVersion(Object object) {
+    var response = object as List<Object>;
+    if ((response.first as int) == 1) {
+      return response[2] as String;
+    } else {
+      return "";
+    }
+  }
+
+  void _dispatchResult(
+      X509Certificate cert, String daemonVersion, bool isDeluge1) {
+    var details = new DaemonDetails(
+        host, port, cert, daemonVersion, isDeluge1, !isDeluge1);
+    if (!_completer.isCompleted) {
+      _completer.complete(details);
+    }
+  }
+}
+
+class DaemonDetails {
+  final String host;
+  final int port;
+  final X509Certificate daemonCertificate;
+  final String daemonVersion;
+  final bool isDeluge1;
+  final bool isDeluge2;
+
+  DaemonDetails(this.host, this.port, this.daemonCertificate,
+      this.daemonVersion, this.isDeluge1, this.isDeluge2);
+
+  @override
+  String toString() => "Daemon at $host:$port, version [$daemonVersion] "
+        "cert: ${daemonCertificate.sha1} isDeluge1: $isDeluge1";
+}
+
 class ConnectionFactory {
   final String host;
   final int port;
@@ -34,66 +130,23 @@ class ConnectionFactory {
   final Completer<DelugeConnection> _completer =
       new Completer<DelugeConnection>();
 
-  int _requestId = -100;
-  DelugeConnection deluge1Connection;
-  DelugeConnection deluge2Connection;
-
   ConnectionFactory(this.host, this.port, this.pinnedCertificate, this.timeout,
       this.responseCallback, this.errorCallback);
 
-  Future<DelugeConnection> getConnection() {
-    deluge1Connection = new Deluge1Connection(
-        host, port, pinnedCertificate, timeout, _receiveDeluge1, _error);
-    deluge2Connection = new Deluge2Connection(
-        host, port, pinnedCertificate, timeout, _receiveDeluge2, _error);
-
-    _getDaemonInfo(deluge1Connection);
-    _getDaemonInfo(deluge2Connection);
-    return _completer.future;
-  }
-
-  void _getDaemonInfo(DelugeConnection connection) async {
-    try {
-      await connection.connect();
-      connection.send(
-          [_requestId++, "daemon.info", <dynamic>[], <dynamic, dynamic>{}]);
-    } catch (e, s) {
-      if (!_completer.isCompleted) {
-        _completer.completeError(e, s);
+  Future<DelugeConnection> getConnection() async {
+    return new Future.sync(() async {
+      var daemonDetails = await (new DaemonDetector(host, port)).detect();
+      DelugeConnection connection;
+      if (daemonDetails.isDeluge1) {
+        connection = new Deluge1Connection(host, port, pinnedCertificate,
+            timeout, responseCallback, errorCallback);
+      } else {
+        connection = new Deluge2Connection(host, port, pinnedCertificate,
+            timeout, responseCallback, errorCallback);
       }
-    }
-  }
-
-  void _receiveDeluge1(Object response) async {
-    deluge1Connection.disconnect();
-    deluge2Connection.disconnect();
-
-    try {
-      var connection = new Deluge1Connection(host, port, pinnedCertificate,
-          timeout, responseCallback, errorCallback);
       await connection.connect();
-      _completer.complete(connection);
-    } catch (e, s) {
-      _completer.completeError(e, s);
-    }
-  }
-
-  void _receiveDeluge2(Object response) async {
-    deluge1Connection.disconnect();
-    deluge2Connection.disconnect();
-
-    try {
-      var connection = new Deluge2Connection(host, port, pinnedCertificate,
-          timeout, responseCallback, errorCallback);
-      await connection.connect();
-      _completer.complete(connection);
-    } catch (e, s) {
-      _completer.completeError(e, s);
-    }
-  }
-
-  void _error(Object error) {
-    throw error;
+      return connection;
+    });
   }
 }
 
@@ -151,6 +204,8 @@ abstract class DelugeConnection {
     //this is necessary because the Deluge daemon uses self signed certificates
     return pinnedCertificate == null || pinnedCertificate.isEmpty;
   }
+
+  X509Certificate get certificate => _socket?.peerCertificate;
 
   void receive(List<int> response);
 
