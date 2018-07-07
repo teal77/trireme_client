@@ -22,11 +22,21 @@ import 'dart:async';
 
 import 'deserialization.dart';
 import 'events.dart';
+import 'src/deluge_connection.dart';
 import 'src/trireme_client_core.dart';
+
+export 'deserialization.dart';
+export 'events.dart';
+export 'src/deluge_connection.dart' show DaemonDetails;
 
 part 'trireme_client.g.dart';
 
 abstract class TriremeClient {
+
+  static Future<DaemonDetails> detectDaemon(String host, int port) {
+    return new DaemonDetector(host, port).detect();
+  }
+
   final DelugeClient _client;
 
   bool isDisposed;
