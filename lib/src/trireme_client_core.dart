@@ -59,14 +59,17 @@ class DelugeClient {
 
   void _connect() {
     if (_connection == null) {
-      var connectionFactory = new ConnectionFactory(
-          host, port, pinnedCertificate, timeoutDuration, _receive, _errorCallback);
+      var connectionFactory = new ConnectionFactory(host, port,
+          pinnedCertificate, timeoutDuration, _receive, _errorCallback);
       _connecting = connectionFactory.getConnection().then<int>((connection) {
         _connection = connection;
         return login();
-      });
+      }).whenComplete(() => _connecting = null);
     } else {
-      _connecting = _connection.connect().then<int>((dynamic _) => login());
+      _connecting = _connection
+          .connect()
+          .then<int>((dynamic _) => login())
+          .whenComplete(() => _connecting = null);
     }
   }
 
@@ -74,14 +77,10 @@ class DelugeClient {
       [List<Object> args, Map<Object, Object> kwargs]) async {
     return new Future.sync(() async {
       if (_connection == null || !_connection.isConnected()) {
-        if (_connecting != null) {
-          await _connecting;
-          _connecting = null;
-        } else {
+        if (_connecting == null) {
           _connect();
-          await _connecting;
-          _connecting = null;
         }
+        await _connecting;
       }
 
       return _sendCall(name, args, kwargs);
