@@ -3,7 +3,7 @@
 part of trireme_client;
 
 // **************************************************************************
-// Generator: ApiCallGenerator
+// ApiCallGenerator
 // **************************************************************************
 
 class _$TriremeClientImpl extends TriremeClient {

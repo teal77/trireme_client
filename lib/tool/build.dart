@@ -39,5 +39,5 @@ Future main(List<String> args) async {
         hideOutput: false),
   ];
 
-  await run(['build'], builders);
+  await run(['build', '--delete-conflicting-outputs'], builders);
 }

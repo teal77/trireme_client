@@ -122,7 +122,7 @@ class _DeserializationCodeGenerator extends StringBuffer {
 class DeserializationFactoryGenerator extends Generator {
   @override
   FutureOr<String> generate(LibraryReader library, BuildStep buildStep) {
-    var factoryClass = library.findType("CustomDeserializerFactory");
+    var factoryClass = library.element.getType("CustomDeserializerFactory");
     if (factoryClass == null) {
       return null;
     } else {

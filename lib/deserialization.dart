@@ -156,6 +156,9 @@ class TorrentDetail {
   @MapKey("time_added")
   num addedTime;
 
+  @MapKey("completed_time")
+  num timeCompleted;
+
   bool private;
 
   @MapKey("total_payload_upload")

@@ -3,7 +3,7 @@
 part of trireme_deserialization;
 
 // **************************************************************************
-// Generator: DeserializationGenerator
+// DeserializationGenerator
 // **************************************************************************
 
 class $TorrentListItemCustomDeserializer
@@ -104,6 +104,7 @@ class $TorrentDetailCustomDeserializer
     item.activeTime = map['active_time'] as int;
     item.seedingTime = map['seeding_time'] as int;
     item.addedTime = map['time_added'] as num;
+    item.timeCompleted = map['completed_time'] as num;
     item.private = map['private'] as bool;
     item.uploadedInThisSession = map['total_payload_upload'] as int;
     item.totalUploaded = map['total_uploaded'] as int;
@@ -148,6 +149,7 @@ const torrentDetailKeys = const [
   'active_time',
   'seeding_time',
   'time_added',
+  'completed_time',
   'private',
   'total_payload_upload',
   'total_uploaded',
@@ -373,7 +375,7 @@ const addTorrentDefaultOptionsKeys = const [
 ];
 
 // **************************************************************************
-// Generator: DeserializationFactoryGenerator
+// DeserializationFactoryGenerator
 // **************************************************************************
 
 class $CustomDeserializerFactoryImpl extends CustomDeserializerFactory {
