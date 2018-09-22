@@ -33,7 +33,7 @@ Future main(List<String> args) async {
                 new ApiCallGenerator(),
                 new DeserializationGenerator(),
                 new DeserializationFactoryGenerator()
-              ])
+              ], ".g.dart")
         ],
         toRoot(),
         hideOutput: false),
