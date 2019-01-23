@@ -34,6 +34,7 @@ class DaemonDetector {
   Completer<DaemonDetails> _completer = new Completer();
   int _requestId = 0;
   DelugeConnection _deluge1Connection;
+  DelugeConnection _oldDeluge2Connection;
   DelugeConnection _deluge2Connection;
 
   DaemonDetector(this.host, this.port);
@@ -41,14 +42,18 @@ class DaemonDetector {
   Future<DaemonDetails> detect() {
     _deluge1Connection = new Deluge1Connection(
         host, port, null, timeout, _receiveDeluge1, _error);
+    _oldDeluge2Connection = new OldDeluge2Connection(
+        host, port, null, timeout, _receiveOldDeluge2, _error);
     _deluge2Connection = new Deluge2Connection(
         host, port, null, timeout, _receiveDeluge2, _error);
 
     _getDaemonInfo(_deluge1Connection);
+    _getDaemonInfo(_oldDeluge2Connection);
     _getDaemonInfo(_deluge2Connection);
     new Timer(timeout, () {
       if (!_completer.isCompleted) {
-        _completer.completeError(new DelugeRpcError("Timeout", "Request timed out"));
+        _completer
+            .completeError(new DelugeRpcError("Timeout", "Request timed out"));
       }
     });
     return _completer.future;
@@ -74,15 +79,26 @@ class DaemonDetector {
   void _receiveDeluge1(Object response) async {
     var cert = _deluge1Connection.certificate;
     _deluge1Connection.disconnect();
+    _oldDeluge2Connection.disconnect();
     _deluge2Connection.disconnect();
-    _dispatchResult(cert, _getDaemonVersion(response), true);
+    _dispatchResult(cert, _getDaemonVersion(response), true, 0);
+  }
+
+  void _receiveOldDeluge2(Object response) async {
+    var cert = _oldDeluge2Connection.certificate;
+    _deluge1Connection.disconnect();
+    _oldDeluge2Connection.disconnect();
+    _deluge2Connection.disconnect();
+    _dispatchResult(cert, _getDaemonVersion(response), false, 0);
   }
 
   void _receiveDeluge2(Object response) async {
     var cert = _deluge2Connection.certificate;
     _deluge1Connection.disconnect();
+    _oldDeluge2Connection.disconnect();
     _deluge2Connection.disconnect();
-    _dispatchResult(cert, _getDaemonVersion(response), false);
+    _dispatchResult(cert, _getDaemonVersion(response), false,
+        Deluge2Connection.protocolVersion);
   }
 
   void _error(Object error) {
@@ -100,10 +116,10 @@ class DaemonDetector {
     }
   }
 
-  void _dispatchResult(
-      X509Certificate cert, String daemonVersion, bool isDeluge1) {
-    var details = new DaemonDetails(
-        host, port, cert, daemonVersion, isDeluge1, !isDeluge1);
+  void _dispatchResult(X509Certificate cert, String daemonVersion,
+      bool isDeluge1, int protocolVersion) {
+    var details = new DaemonDetails(host, port, cert, daemonVersion,
+        protocolVersion, isDeluge1, !isDeluge1);
     if (!_completer.isCompleted) {
       _completer.complete(details);
     }
@@ -115,15 +131,16 @@ class DaemonDetails {
   final int port;
   final X509Certificate daemonCertificate;
   final String daemonVersion;
+  final int protocolVersion;
   final bool isDeluge1;
   final bool isDeluge2;
 
   DaemonDetails(this.host, this.port, this.daemonCertificate,
-      this.daemonVersion, this.isDeluge1, this.isDeluge2);
+      this.daemonVersion, this.protocolVersion, this.isDeluge1, this.isDeluge2);
 
   @override
   String toString() => "Daemon at $host:$port, version [$daemonVersion] "
-        "cert: ${daemonCertificate.sha1} isDeluge1: $isDeluge1";
+      "cert: ${daemonCertificate.sha1} isDeluge1: $isDeluge1";
 }
 
 class ConnectionFactory {
@@ -148,8 +165,13 @@ class ConnectionFactory {
         connection = new Deluge1Connection(host, port, pinnedCertificate,
             timeout, responseCallback, errorCallback);
       } else {
-        connection = new Deluge2Connection(host, port, pinnedCertificate,
-            timeout, responseCallback, errorCallback);
+        if (daemonDetails.protocolVersion > 0) {
+          connection = new Deluge2Connection(host, port, pinnedCertificate,
+              timeout, responseCallback, errorCallback);
+        } else {
+          connection = new OldDeluge2Connection(host, port, pinnedCertificate,
+              timeout, responseCallback, errorCallback);
+        }
       }
       await connection.connect();
       return connection;
@@ -292,14 +314,14 @@ class Deluge1Connection extends DelugeConnection {
   }
 }
 
-class Deluge2Connection extends DelugeConnection {
+class OldDeluge2Connection extends DelugeConnection {
   static const int headerSize = 5;
 
   static final int headerChar = ascii.encode("D").first;
 
   int _responseLength;
 
-  Deluge2Connection(
+  OldDeluge2Connection(
       String host,
       int port,
       List<int> pinnedCert,
@@ -338,6 +360,68 @@ class Deluge2Connection extends DelugeConnection {
     }
 
     _partialData.add(response);
+
+    if (_partialData.length >= _responseLength) {
+      _responseCallback(_codec.decode(_partialData.takeBytes()));
+    }
+  }
+}
+
+class Deluge2Connection extends DelugeConnection {
+  static const int headerSize = 5;
+
+  static final int protocolVersion = 1;
+
+  int _responseLength;
+
+  Deluge2Connection(
+      String host,
+      int port,
+      List<int> pinnedCert,
+      Duration timeout,
+      ResponseCallback responseCallback,
+      ErrorCallback errorCallback)
+      : super(host, port, pinnedCert, timeout, responseCallback, errorCallback);
+
+  void send(Object object) {
+    var request = _codec.encode([object]);
+    _socket.add(_getRequestHeader(request.length));
+    _socket.add(_codec.encode([object]));
+  }
+
+  List<int> _getRequestHeader(int requestLength) {
+    BytesBuilder bb = new BytesBuilder();
+    bb.addByte(protocolVersion);
+
+    var bd = new ByteData(4);
+    bd.setUint32(0, requestLength);
+    bb.add(bd.buffer.asUint8List());
+    return bb.takeBytes();
+  }
+
+  void receive(List<int> response) {
+    if (_partialData.isEmpty) {
+      if (response.length < headerSize) {
+        return;
+      }
+      if (response.first != protocolVersion) {
+        throw "Unknown protocol version ${response.first}";
+      }
+      _responseLength =
+          new Uint8List.fromList(response.getRange(1, headerSize).toList())
+              .buffer
+              .asByteData()
+              .getUint32(0);
+      _partialData.add(response.getRange(headerSize, response.length).toList());
+    } else {
+      if (response.first == protocolVersion) {
+        //we have to assume this is the start of a new message
+        _partialData.clear();
+        receive(response);
+      } else {
+        _partialData.add(response);
+      }
+    }
 
     if (_partialData.length >= _responseLength) {
       _responseCallback(_codec.decode(_partialData.takeBytes()));
