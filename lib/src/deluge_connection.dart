@@ -414,12 +414,12 @@ class Deluge2Connection extends DelugeConnection {
               .getUint32(0);
       _partialData.add(response.getRange(headerSize, response.length).toList());
     } else {
+      _partialData.add(response);
       if (response.first == protocolVersion) {
-        //we have to assume this is the start of a new message
-        _partialData.clear();
-        receive(response);
-      } else {
-        _partialData.add(response);
+        if (_partialData.length > _responseLength) {
+          _partialData.clear();
+          receive(response);
+        }
       }
     }
 
