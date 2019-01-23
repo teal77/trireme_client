@@ -9,3 +9,5 @@ pubspec.lock
 
 test/config.dart
 *.iml
+android/
+ios/

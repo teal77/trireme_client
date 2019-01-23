@@ -23,6 +23,8 @@ import 'dart:typed_data';
 
 import 'package:rencode/rencode.dart';
 
+import '../trireme_client.dart';
+
 class DaemonDetector {
   static const Duration timeout = const Duration(seconds: 30);
 
@@ -44,6 +46,11 @@ class DaemonDetector {
 
     _getDaemonInfo(_deluge1Connection);
     _getDaemonInfo(_deluge2Connection);
+    new Timer(timeout, () {
+      if (!_completer.isCompleted) {
+        _completer.completeError(new DelugeRpcError("Timeout", "Request timed out"));
+      }
+    });
     return _completer.future;
   }
 
