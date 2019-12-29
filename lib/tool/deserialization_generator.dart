@@ -79,7 +79,7 @@ class _DeserializationCodeGenerator extends StringBuffer {
         if (isCustomDeserializableType(listTypeParam.element)) {
           write("CustomDeserializer<$listTypeParam> deserializer");
           writeln(
-              "= new CustomDeserializerFactory().createDeserializer(${listTypeParam});");
+              "= new CustomDeserializerFactory().createDeserializer(${listTypeParam}) as CustomDeserializer<$listTypeParam>;");
           writeln("item.${f
               .name} = (map['$mapKey'] as List<Object>)?.map((e) => deserializer.deserialize(e))?.toList();");
         } else {

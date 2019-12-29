@@ -105,7 +105,7 @@ class _ApiCallCodeGenerator extends StringBuffer {
         var listTypeArgument = typeArguments.first;
         if (isCustomDeserializingType(listTypeArgument)) {
           writeln(
-              "CustomDeserializer<$listTypeArgument> deserializer = new CustomDeserializerFactory().createDeserializer($listTypeArgument);");
+              "CustomDeserializer<$listTypeArgument> deserializer = new CustomDeserializerFactory().createDeserializer($listTypeArgument) as CustomDeserializer<$listTypeArgument>;");
           writeln(
               "var result2 = result.map((e) => deserializer.deserialize(e));");
         } else {
@@ -116,7 +116,7 @@ class _ApiCallCodeGenerator extends StringBuffer {
         var valueTypeArgument = typeArguments[1];
         if (isCustomDeserializingType(valueTypeArgument)) {
           writeln(
-              "CustomDeserializer<$valueTypeArgument> deserializer = new CustomDeserializerFactory().createDeserializer($valueTypeArgument);");
+              "CustomDeserializer<$valueTypeArgument> deserializer = new CustomDeserializerFactory().createDeserializer($valueTypeArgument) as CustomDeserializer<$valueTypeArgument>;");
           writeln(
               "var result2 = result.map((k, v) => new MapEntry(k as $keyTypeArgument, deserializer.deserialize(v)));");
         } else {
@@ -125,7 +125,7 @@ class _ApiCallCodeGenerator extends StringBuffer {
         }
       } else if (isCustomDeserializingType(returnTypeParam)) {
         writeln(
-            "CustomDeserializer<$returnTypeParam> deserializer = new CustomDeserializerFactory().createDeserializer($returnTypeParam);");
+            "CustomDeserializer<$returnTypeParam> deserializer = new CustomDeserializerFactory().createDeserializer($returnTypeParam) as CustomDeserializer<$returnTypeParam>;");
         writeln("var result2 = deserializer.deserialize(result);");
       } else {
         writeln("var result2 = result;");

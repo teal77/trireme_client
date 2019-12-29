@@ -191,7 +191,8 @@ class $TorrentFilesCustomDeserializer extends CustomDeserializer<TorrentFiles> {
     item.filePriorities = (map['file_priorities'] as List)?.cast<int>();
     item.fileProgress = (map['file_progress'] as List)?.cast<double>();
     CustomDeserializer<TorrentFile> deserializer =
-        new CustomDeserializerFactory().createDeserializer(TorrentFile);
+        new CustomDeserializerFactory().createDeserializer(TorrentFile)
+            as CustomDeserializer<TorrentFile>;
     item.files = (map['files'] as List<Object>)
         ?.map((e) => deserializer.deserialize(e))
         ?.toList();
@@ -230,8 +231,8 @@ class $PeersCustomDeserializer extends CustomDeserializer<Peers> {
     var oAsMap = (o as Map<Object, Object>);
     var map = oAsMap.cast<String, Object>();
     Peers item = new Peers();
-    CustomDeserializer<Peer> deserializer =
-        new CustomDeserializerFactory().createDeserializer(Peer);
+    CustomDeserializer<Peer> deserializer = new CustomDeserializerFactory()
+        .createDeserializer(Peer) as CustomDeserializer<Peer>;
     item.peers = (map['peers'] as List<Object>)
         ?.map((e) => deserializer.deserialize(e))
         ?.toList();
@@ -286,8 +287,8 @@ class $TorrentOptionsCustomDeserializer
     item.stopRatio = map['stop_ratio'] as num;
     item.moveCompleted = map['move_completed'] as bool;
     item.moveCompletedPath = map['move_completed_path'] as String;
-    CustomDeserializer<Tracker> deserializer =
-        new CustomDeserializerFactory().createDeserializer(Tracker);
+    CustomDeserializer<Tracker> deserializer = new CustomDeserializerFactory()
+        .createDeserializer(Tracker) as CustomDeserializer<Tracker>;
     item.trackers = (map['trackers'] as List<Object>)
         ?.map((e) => deserializer.deserialize(e))
         ?.toList();

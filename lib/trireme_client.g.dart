@@ -35,7 +35,8 @@ class _$TriremeClientImpl extends TriremeClient {
     Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
         'core.get_session_status', [sessionStatusKeys]);
     CustomDeserializer<SessionStatus> deserializer =
-        new CustomDeserializerFactory().createDeserializer(SessionStatus);
+        new CustomDeserializerFactory().createDeserializer(SessionStatus)
+            as CustomDeserializer<SessionStatus>;
     var result2 = deserializer.deserialize(result);
     return result2;
   }
@@ -160,7 +161,8 @@ class _$TriremeClientImpl extends TriremeClient {
     Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
         'core.get_torrent_status', [torrentId, keys]);
     CustomDeserializer<TorrentDetail> deserializer =
-        new CustomDeserializerFactory().createDeserializer(TorrentDetail);
+        new CustomDeserializerFactory().createDeserializer(TorrentDetail)
+            as CustomDeserializer<TorrentDetail>;
     var result2 = deserializer.deserialize(result);
     return result2;
   }
@@ -170,7 +172,8 @@ class _$TriremeClientImpl extends TriremeClient {
     Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
         'core.get_torrent_status', [torrentId, keys]);
     CustomDeserializer<TorrentFiles> deserializer =
-        new CustomDeserializerFactory().createDeserializer(TorrentFiles);
+        new CustomDeserializerFactory().createDeserializer(TorrentFiles)
+            as CustomDeserializer<TorrentFiles>;
     var result2 = deserializer.deserialize(result);
     return result2;
   }
@@ -179,8 +182,8 @@ class _$TriremeClientImpl extends TriremeClient {
       {List<String> keys: peersKeys}) async {
     Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
         'core.get_torrent_status', [torrentId, keys]);
-    CustomDeserializer<Peers> deserializer =
-        new CustomDeserializerFactory().createDeserializer(Peers);
+    CustomDeserializer<Peers> deserializer = new CustomDeserializerFactory()
+        .createDeserializer(Peers) as CustomDeserializer<Peers>;
     var result2 = deserializer.deserialize(result);
     return result2;
   }
@@ -190,7 +193,8 @@ class _$TriremeClientImpl extends TriremeClient {
     Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
         'core.get_torrent_status', [torrentId, keys]);
     CustomDeserializer<TorrentOptions> deserializer =
-        new CustomDeserializerFactory().createDeserializer(TorrentOptions);
+        new CustomDeserializerFactory().createDeserializer(TorrentOptions)
+            as CustomDeserializer<TorrentOptions>;
     var result2 = deserializer.deserialize(result);
     return result2;
   }
@@ -201,7 +205,8 @@ class _$TriremeClientImpl extends TriremeClient {
     Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
         'core.get_torrents_status', [filterDict, keys]);
     CustomDeserializer<TorrentListItem> deserializer =
-        new CustomDeserializerFactory().createDeserializer(TorrentListItem);
+        new CustomDeserializerFactory().createDeserializer(TorrentListItem)
+            as CustomDeserializer<TorrentListItem>;
     var result2 = result
         .map((k, v) => new MapEntry(k as String, deserializer.deserialize(v)));
     return result2;
@@ -219,7 +224,8 @@ class _$TriremeClientImpl extends TriremeClient {
     Map<Object, Object> result =
         await _client.rpcCall<Map<Object, Object>>('core.get_filter_tree');
     CustomDeserializer<FilterTree> deserializer =
-        new CustomDeserializerFactory().createDeserializer(FilterTree);
+        new CustomDeserializerFactory().createDeserializer(FilterTree)
+            as CustomDeserializer<FilterTree>;
     var result2 = deserializer.deserialize(result);
     return result2;
   }
@@ -251,7 +257,8 @@ class _$TriremeClientImpl extends TriremeClient {
         .rpcCall<Map<Object, Object>>('core.get_config_values', [keys]);
     CustomDeserializer<AddTorrentDefaultOptions> deserializer =
         new CustomDeserializerFactory()
-            .createDeserializer(AddTorrentDefaultOptions);
+                .createDeserializer(AddTorrentDefaultOptions)
+            as CustomDeserializer<AddTorrentDefaultOptions>;
     var result2 = deserializer.deserialize(result);
     return result2;
   }

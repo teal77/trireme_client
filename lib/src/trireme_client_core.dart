@@ -127,15 +127,15 @@ class DelugeClient {
     if (_log) print("<<< $response");
 
     if (response[0] == rpcResponse) {
-      int requestId = response[1];
+      int requestId = response[1] as int;
       var r = _requests.remove(requestId);
       r?.onResponse(response[2]);
     } else if (response[0] == rpcError) {
-      int requestId = response[1];
+      int requestId = response[1] as int;
       var r = _requests.remove(requestId);
 
       if (_connection is Deluge1Connection) {
-        List<Object> delugeRpcError = response[2];
+        List<Object> delugeRpcError = response[2] as List<Object>;
         r?.onError(delugeRpcError[0] as String, delugeRpcError[1] as String,
             delugeRpcError[2] as String);
       } else {
