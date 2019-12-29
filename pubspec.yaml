@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   rencode: "0.0.3"
+  type_helper: "^0.1.0"
 
 dev_dependencies:
   test: "^1.5.1"

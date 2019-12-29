@@ -148,23 +148,25 @@ class _$TriremeClientImpl extends TriremeClient {
     return result;
   }
 
-  Future<Map<String, Object>> getTorrentStatus(
+  Future<Response<Map<String, Object>>> getTorrentStatus(
       String torrentId, List<String> keys) async {
-    Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
+    Response<Object> result = await _client.rpcCall<Response<Object>>(
         'core.get_torrent_status', [torrentId, keys]);
-    var result2 = result.cast<String, Object>();
-    return result2;
+    var resultUnwrapped = result.response as Map<Object, Object>;
+    var result2 = resultUnwrapped.cast<String, Object>();
+    return new Response(result.requestId, result2);
   }
 
-  Future<TorrentDetail> getTorrentDetails(String torrentId,
+  Future<Response<TorrentDetail>> getTorrentDetails(String torrentId,
       {List<String> keys: torrentDetailKeys}) async {
-    Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
+    Response<Object> result = await _client.rpcCall<Response<Object>>(
         'core.get_torrent_status', [torrentId, keys]);
+    var resultUnwrapped = result.response as Map<Object, Object>;
     CustomDeserializer<TorrentDetail> deserializer =
         new CustomDeserializerFactory().createDeserializer(TorrentDetail)
             as CustomDeserializer<TorrentDetail>;
-    var result2 = deserializer.deserialize(result);
-    return result2;
+    var result2 = deserializer.deserialize(resultUnwrapped);
+    return new Response(result.requestId, result2);
   }
 
   Future<TorrentFiles> getTorrentFileList(String torrentId,

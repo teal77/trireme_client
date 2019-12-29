@@ -73,7 +73,7 @@ class _ApiCallCodeGenerator extends StringBuffer {
     var returnType = method.returnType.toString();
     var methodName = method.name;
     var methodParameters =
-        method.parameters.isEmpty ? "" : method.parameters.join(", ");
+    method.parameters.isEmpty ? "" : method.parameters.join(", ");
 
     writeln("$returnType $methodName($methodParameters) async {");
 
@@ -86,6 +86,8 @@ class _ApiCallCodeGenerator extends StringBuffer {
       requestType = "Map<Object, Object>";
     } else if (isCustomDeserializingType(returnTypeParam)) {
       requestType = "Map<Object, Object>";
+    } else if (isResponseWrapper(returnTypeParam)) {
+      requestType = "Response<Object>";
     }
 
     var apiName = getApiName(library, method);
@@ -96,9 +98,38 @@ class _ApiCallCodeGenerator extends StringBuffer {
           ", " + method.parameters.map((p) => p.name).toList().toString();
     }
 
-    write(
-        "$requestType result = await _client.rpcCall<$requestType>('$apiName'$rpcParameters);");
+    write("$requestType result = await _client.rpcCall<$requestType>('$apiName'$rpcParameters);");
 
+    if (!isResponseWrapper(returnTypeParam)) {
+      generateDeserializing(returnTypeParam, "result");
+    } else {
+      DartType innerType = (returnTypeParam as ParameterizedType).typeArguments.first;
+      var intermediateType = "";
+      if (isList(innerType)) {
+        intermediateType = "List<Object>";
+      } else if (isMap(innerType)) {
+        intermediateType = "Map<Object, Object>";
+      } else if (isCustomDeserializingType(innerType)) {
+        intermediateType = "Map<Object, Object>";
+      } else {
+        intermediateType = innerType.toString();
+      }
+      writeln("var resultUnwrapped = result.response as ${intermediateType};");
+      generateDeserializing(innerType, "resultUnwrapped");
+    }
+
+    if (returnTypeParam.isDynamic) {
+      writeln("return result;");
+    } else if (isResponseWrapper(returnTypeParam)) {
+      writeln("return new Response(result.requestId, result2);");
+    } else {
+      writeln("return result2;");
+    }
+
+    writeln("}");
+  }
+
+  void generateDeserializing(DartType returnTypeParam, String argumentName) {
     if (returnTypeParam is ParameterizedType) {
       var typeArguments = returnTypeParam.typeArguments;
       if (isList(returnTypeParam)) {
@@ -107,9 +138,9 @@ class _ApiCallCodeGenerator extends StringBuffer {
           writeln(
               "CustomDeserializer<$listTypeArgument> deserializer = new CustomDeserializerFactory().createDeserializer($listTypeArgument) as CustomDeserializer<$listTypeArgument>;");
           writeln(
-              "var result2 = result.map((e) => deserializer.deserialize(e));");
+              "var result2 = $argumentName.map((e) => deserializer.deserialize(e));");
         } else {
-          writeln("var result2 = result.cast<$listTypeArgument>();");
+          writeln("var result2 = $argumentName.cast<$listTypeArgument>();");
         }
       } else if (isMap(returnTypeParam)) {
         var keyTypeArgument = typeArguments[0];
@@ -118,32 +149,26 @@ class _ApiCallCodeGenerator extends StringBuffer {
           writeln(
               "CustomDeserializer<$valueTypeArgument> deserializer = new CustomDeserializerFactory().createDeserializer($valueTypeArgument) as CustomDeserializer<$valueTypeArgument>;");
           writeln(
-              "var result2 = result.map((k, v) => new MapEntry(k as $keyTypeArgument, deserializer.deserialize(v)));");
+              "var result2 = $argumentName.map((k, v) => new MapEntry(k as $keyTypeArgument, deserializer.deserialize(v)));");
         } else {
           writeln(
-              "var result2 = result.cast<$keyTypeArgument, $valueTypeArgument>();");
+              "var result2 = $argumentName.cast<$keyTypeArgument, $valueTypeArgument>();");
         }
       } else if (isCustomDeserializingType(returnTypeParam)) {
         writeln(
             "CustomDeserializer<$returnTypeParam> deserializer = new CustomDeserializerFactory().createDeserializer($returnTypeParam) as CustomDeserializer<$returnTypeParam>;");
-        writeln("var result2 = deserializer.deserialize(result);");
+        writeln("var result2 = deserializer.deserialize($argumentName);");
       } else {
-        writeln("var result2 = result;");
+        writeln("var result2 = $argumentName;");
       }
     }
-
-    if (returnTypeParam.isDynamic) {
-      writeln("return result;");
-    } else {
-      writeln("return result2;");
-    }
-
-    writeln("}");
   }
 
   String getApiName(LibraryElement library, MethodElement method) {
     var annotation =
-        getAnnotationOfType(library.getType("ApiName").type, method);
+    getAnnotationOfType(library
+        .getType("ApiName")
+        .type, method);
 
     var apiNameStr = annotation.getField("name").toStringValue();
     return apiNameStr;
@@ -159,8 +184,14 @@ class _ApiCallCodeGenerator extends StringBuffer {
 
   bool isCustomDeserializingType(DartType type) {
     var annotation = getAnnotationOfType(
-        _libraryDeserialization.getType("CustomDeserialize").type,
+        _libraryDeserialization
+            .getType("CustomDeserialize")
+            .type,
         type.element);
     return annotation != null;
+  }
+
+  bool isResponseWrapper(DartType type) {
+    return type.element.name == "Response";
   }
 }

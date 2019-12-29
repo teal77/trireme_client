@@ -18,6 +18,8 @@
 
 import 'dart:async';
 
+import 'package:type_helper/type_helper.dart';
+
 import '../events.dart';
 import '../trireme_client.dart';
 
@@ -56,6 +58,8 @@ class DelugeClient {
   void init() {
     _streamController = new StreamController.broadcast();
   }
+
+  int get latestRequestId => _requestId;
 
   void _connect() {
     if (_connection == null) {
@@ -115,7 +119,7 @@ class DelugeClient {
 
       if (_log) print(">>> $payload");
 
-      var r = new _Request<T>(payload);
+      var r = new _Request<T>(_requestId, payload);
       _requests[_requestId] = r;
       return r.completer.future;
     });
@@ -180,18 +184,19 @@ class DelugeClient {
 }
 
 class _Request<T> {
+  final int requestId;
   final Object payload;
   final Completer<T> completer = new Completer<T>();
 
-  _Request(this.payload);
-
-  T castResponse(Object o) {
-    return o as T;
-  }
+  _Request(this.requestId, this.payload);
 
   void onResponse(Object response) {
     if (!completer.isCompleted) {
-      completer.complete(castResponse(response));
+      if (isTypeOf<T, Response>()) {
+        completer.complete(new Response<dynamic>(requestId, response) as T);
+      } else {
+        completer.complete(response as T);
+      }
     }
   }
 

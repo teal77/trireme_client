@@ -70,6 +70,8 @@ abstract class TriremeClient {
 
   int get port => _client.port;
 
+  int get latestRequestId => _client.latestRequestId;
+
   Stream<DelugeRpcEvent> delugeRpcEvents() => _client.delugeEvents();
 
   Future<int> login() => _client.login();
@@ -137,11 +139,11 @@ abstract class TriremeClient {
   Future setTorrentTrackers(String torrentId, List<Map> trackers);
 
   @ApiName("core.get_torrent_status")
-  Future<Map<String, Object>> getTorrentStatus(
+  Future<Response<Map<String, Object>>> getTorrentStatus(
       String torrentId, List<String> keys);
 
   @ApiName("core.get_torrent_status")
-  Future<TorrentDetail> getTorrentDetails(String torrentId,
+  Future<Response<TorrentDetail>> getTorrentDetails(String torrentId,
       {List<String> keys = torrentDetailKeys});
 
   @ApiName("core.get_torrent_status")
@@ -260,6 +262,19 @@ class DelugeRpcError {
 
   @override
   String toString() => "$type, $msg";
+}
+
+//A wrapper class which contains requestId
+class Response<T> {
+  final int requestId;
+  final T response;
+
+  Response(this.requestId, Object response): this.response = response as T;
+
+  @override
+  String toString() {
+    return 'requestId: $requestId => $response}';
+  }
 }
 
 //Used for codegen
