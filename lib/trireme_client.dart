@@ -266,10 +266,11 @@ class DelugeRpcError {
 
 //A wrapper class which contains requestId
 class Response<T> {
+  final String apiName;
   final int requestId;
   final T response;
 
-  Response(this.requestId, Object response): this.response = response as T;
+  Response(this.apiName, this.requestId, Object response): this.response = response as T;
 
   @override
   String toString() {

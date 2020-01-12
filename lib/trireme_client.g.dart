@@ -154,7 +154,7 @@ class _$TriremeClientImpl extends TriremeClient {
         'core.get_torrent_status', [torrentId, keys]);
     var resultUnwrapped = result.response as Map<Object, Object>;
     var result2 = resultUnwrapped.cast<String, Object>();
-    return new Response(result.requestId, result2);
+    return new Response(result.apiName, result.requestId, result2);
   }
 
   Future<Response<TorrentDetail>> getTorrentDetails(String torrentId,
@@ -166,7 +166,7 @@ class _$TriremeClientImpl extends TriremeClient {
         new CustomDeserializerFactory().createDeserializer(TorrentDetail)
             as CustomDeserializer<TorrentDetail>;
     var result2 = deserializer.deserialize(resultUnwrapped);
-    return new Response(result.requestId, result2);
+    return new Response(result.apiName, result.requestId, result2);
   }
 
   Future<TorrentFiles> getTorrentFileList(String torrentId,

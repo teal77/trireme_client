@@ -119,7 +119,7 @@ class DelugeClient {
 
       if (_log) print(">>> $payload");
 
-      var r = new _Request<T>(_requestId, payload);
+      var r = new _Request<T>(name, _requestId, payload);
       _requests[_requestId] = r;
       return r.completer.future;
     });
@@ -184,16 +184,17 @@ class DelugeClient {
 }
 
 class _Request<T> {
+  final String apiName;
   final int requestId;
   final Object payload;
   final Completer<T> completer = new Completer<T>();
 
-  _Request(this.requestId, this.payload);
+  _Request(this.apiName, this.requestId, this.payload);
 
   void onResponse(Object response) {
     if (!completer.isCompleted) {
       if (isTypeOf<T, Response>()) {
-        completer.complete(new Response<dynamic>(requestId, response) as T);
+        completer.complete(new Response<dynamic>(apiName, requestId, response) as T);
       } else {
         completer.complete(response as T);
       }

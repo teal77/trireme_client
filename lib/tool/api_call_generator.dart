@@ -121,7 +121,7 @@ class _ApiCallCodeGenerator extends StringBuffer {
     if (returnTypeParam.isDynamic) {
       writeln("return result;");
     } else if (isResponseWrapper(returnTypeParam)) {
-      writeln("return new Response(result.requestId, result2);");
+      writeln("return new Response(result.apiName, result.requestId, result2);");
     } else {
       writeln("return result2;");
     }
