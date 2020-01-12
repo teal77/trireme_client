@@ -30,15 +30,16 @@ class _$TriremeClientImpl extends TriremeClient {
     return result2;
   }
 
-  Future<SessionStatus> getSessionStatus(
+  Future<Response<SessionStatus>> getSessionStatus(
       {List<String> sessionStatusKeys: sessionStatusKeys}) async {
-    Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
+    Response<Object> result = await _client.rpcCall<Response<Object>>(
         'core.get_session_status', [sessionStatusKeys]);
+    var resultUnwrapped = result.response as Map<Object, Object>;
     CustomDeserializer<SessionStatus> deserializer =
         new CustomDeserializerFactory().createDeserializer(SessionStatus)
             as CustomDeserializer<SessionStatus>;
-    var result2 = deserializer.deserialize(result);
-    return result2;
+    var result2 = deserializer.deserialize(resultUnwrapped);
+    return new Response(result.apiName, result.requestId, result2);
   }
 
   Future<dynamic> pauseSession() async {
@@ -169,49 +170,53 @@ class _$TriremeClientImpl extends TriremeClient {
     return new Response(result.apiName, result.requestId, result2);
   }
 
-  Future<TorrentFiles> getTorrentFileList(String torrentId,
+  Future<Response<TorrentFiles>> getTorrentFileList(String torrentId,
       {List<String> keys: torrentFilesKeys}) async {
-    Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
+    Response<Object> result = await _client.rpcCall<Response<Object>>(
         'core.get_torrent_status', [torrentId, keys]);
+    var resultUnwrapped = result.response as Map<Object, Object>;
     CustomDeserializer<TorrentFiles> deserializer =
         new CustomDeserializerFactory().createDeserializer(TorrentFiles)
             as CustomDeserializer<TorrentFiles>;
-    var result2 = deserializer.deserialize(result);
-    return result2;
+    var result2 = deserializer.deserialize(resultUnwrapped);
+    return new Response(result.apiName, result.requestId, result2);
   }
 
-  Future<Peers> getTorrentPeers(String torrentId,
+  Future<Response<Peers>> getTorrentPeers(String torrentId,
       {List<String> keys: peersKeys}) async {
-    Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
+    Response<Object> result = await _client.rpcCall<Response<Object>>(
         'core.get_torrent_status', [torrentId, keys]);
+    var resultUnwrapped = result.response as Map<Object, Object>;
     CustomDeserializer<Peers> deserializer = new CustomDeserializerFactory()
         .createDeserializer(Peers) as CustomDeserializer<Peers>;
-    var result2 = deserializer.deserialize(result);
-    return result2;
+    var result2 = deserializer.deserialize(resultUnwrapped);
+    return new Response(result.apiName, result.requestId, result2);
   }
 
-  Future<TorrentOptions> getTorrentOptions(String torrentId,
+  Future<Response<TorrentOptions>> getTorrentOptions(String torrentId,
       {List<String> keys: torrentOptionsKeys}) async {
-    Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
+    Response<Object> result = await _client.rpcCall<Response<Object>>(
         'core.get_torrent_status', [torrentId, keys]);
+    var resultUnwrapped = result.response as Map<Object, Object>;
     CustomDeserializer<TorrentOptions> deserializer =
         new CustomDeserializerFactory().createDeserializer(TorrentOptions)
             as CustomDeserializer<TorrentOptions>;
-    var result2 = deserializer.deserialize(result);
-    return result2;
+    var result2 = deserializer.deserialize(resultUnwrapped);
+    return new Response(result.apiName, result.requestId, result2);
   }
 
-  Future<Map<String, TorrentListItem>> getTorrentsList(
+  Future<Response<Map<String, TorrentListItem>>> getTorrentsList(
       Map<String, Object> filterDict,
       {List<String> keys: torrentListItemKeys}) async {
-    Map<Object, Object> result = await _client.rpcCall<Map<Object, Object>>(
+    Response<Object> result = await _client.rpcCall<Response<Object>>(
         'core.get_torrents_status', [filterDict, keys]);
+    var resultUnwrapped = result.response as Map<Object, Object>;
     CustomDeserializer<TorrentListItem> deserializer =
         new CustomDeserializerFactory().createDeserializer(TorrentListItem)
             as CustomDeserializer<TorrentListItem>;
-    var result2 = result
+    var result2 = resultUnwrapped
         .map((k, v) => new MapEntry(k as String, deserializer.deserialize(v)));
-    return result2;
+    return new Response(result.apiName, result.requestId, result2);
   }
 
   Future<Map<String, Object>> getTorrentsStatus(

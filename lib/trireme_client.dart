@@ -86,7 +86,7 @@ abstract class TriremeClient {
   Future<List<String>> getSessionState();
 
   @ApiName("core.get_session_status")
-  Future<SessionStatus> getSessionStatus(
+  Future<Response<SessionStatus>> getSessionStatus(
       {List<String> sessionStatusKeys = sessionStatusKeys});
 
   @ApiName("core.pause_session")
@@ -147,19 +147,19 @@ abstract class TriremeClient {
       {List<String> keys = torrentDetailKeys});
 
   @ApiName("core.get_torrent_status")
-  Future<TorrentFiles> getTorrentFileList(String torrentId,
+  Future<Response<TorrentFiles>> getTorrentFileList(String torrentId,
       {List<String> keys = torrentFilesKeys});
 
   @ApiName("core.get_torrent_status")
-  Future<Peers> getTorrentPeers(String torrentId,
+  Future<Response<Peers>> getTorrentPeers(String torrentId,
       {List<String> keys = peersKeys});
 
   @ApiName("core.get_torrent_status")
-  Future<TorrentOptions> getTorrentOptions(String torrentId,
+  Future<Response<TorrentOptions>> getTorrentOptions(String torrentId,
       {List<String> keys = torrentOptionsKeys});
 
   @ApiName("core.get_torrents_status")
-  Future<Map<String, TorrentListItem>> getTorrentsList(
+  Future<Response<Map<String, TorrentListItem>>> getTorrentsList(
       Map<String, Object> filterDict,
       {List<String> keys = torrentListItemKeys});
 
