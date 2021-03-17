@@ -11,3 +11,4 @@ test/config.dart
 *.iml
 android/
 ios/
+build/
