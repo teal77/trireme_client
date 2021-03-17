@@ -25,11 +25,11 @@ import 'package:trireme_client/trireme_client.dart';
 import 'config.dart';
 
 void main() {
-  group("", () {
-    TriremeClient client;
+  group('', () {
+    late TriremeClient client;
 
     setUp(() async {
-      client = new TriremeClient(username, password, host);
+      client = TriremeClient(username, password, host);
       await client.init();
     });
 
@@ -37,15 +37,15 @@ void main() {
       client.dispose();
     });
 
-    test("Test", () async {
+    test('Test', () async {
       Object res = await client.daemonInfo();
       print(res);
       var torrents = await client.getSessionState();
-      var tid = torrents.isEmpty ? "" : torrents[0];
+      var tid = torrents.isEmpty ? '' : torrents[0];
       print(torrents);
       res = await client.getSessionStatus();
       print(res);
-      res = await client.getTorrentsList({"state": "Seeding"});
+      res = await client.getTorrentsList({'state': 'Seeding'});
       print(res);
       res = await client.getFilterTree();
       print(res);
@@ -59,19 +59,19 @@ void main() {
       print(res);
     });
 
-    test("A client which was disposed is initialised again", () async {
+    test('A client which was disposed is initialised again', () async {
       client.dispose();
-      client.init();
+      await client.init();
       print(await client.daemonInfo());
     });
   });
 
-  test("A client with a pinned certificate fails when attempting to connect "
-      "with a wrong certificate", () async {
-    var testCert = await new File("test/testcert.pem").readAsString(); //some random certificate
-    var client = new TriremeClient(username, password, host,
+  test('A client with a pinned certificate fails when attempting to connect '
+      'with a wrong certificate', () async {
+    var testCert = await File('test/testcert.pem').readAsString(); //some random certificate
+    var client = TriremeClient(username, password, host,
         pinnedCertificate: testCert.codeUnits);
-    expect(client.init(), throwsA(new TypeMatcher<HandshakeException>()));
+    expect(client.init(), throwsA(TypeMatcher<HandshakeException>()));
     client.dispose();
   });
 }

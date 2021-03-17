@@ -28,7 +28,7 @@ abstract class CustomDeserializerFactory {
   CustomDeserializer createDeserializer(Type modelClass);
 
   factory CustomDeserializerFactory() {
-    return new $CustomDeserializerFactoryImpl();
+    return $CustomDeserializerFactoryImpl();
   }
 
   CustomDeserializerFactory._();
@@ -44,57 +44,57 @@ class CustomDeserialize {
   const CustomDeserialize();
 }
 
-const customDeserialize = const CustomDeserialize();
+const customDeserialize = CustomDeserialize();
 
 class Exclude {
   const Exclude();
 }
 
-const exclude = const Exclude();
+const exclude = Exclude();
 
 @customDeserialize
 class TorrentListItem {
-  String name;
+  late String name;
 
-  String state;
+  late String state;
 
-  double progress;
+  late double progress;
 
-  @MapKey("download_payload_rate")
-  int downloadSpeed;
+  @MapKey('download_payload_rate')
+  late int downloadSpeed;
 
-  @MapKey("upload_payload_rate")
-  int uploadSpeed;
+  @MapKey('upload_payload_rate')
+  late int uploadSpeed;
 
-  num eta;
+  late num eta;
 
-  @MapKey("total_wanted")
-  int totalSize;
+  @MapKey('total_wanted')
+  late int totalSize;
 
-  @MapKey("total_done")
-  int totalDone;
+  @MapKey('total_done')
+  late int totalDone;
 
-  @MapKey("total_uploaded")
-  int totalUploaded;
+  @MapKey('total_uploaded')
+  late int totalUploaded;
 
-  @MapKey("is_finished")
-  bool isFinished;
+  @MapKey('is_finished')
+  late bool isFinished;
 
-  double ratio;
+  late double ratio;
 
-  @MapKey("time_added")
-  num timeAdded;
+  @MapKey('time_added')
+  late num timeAdded;
 
-  @MapKey("completed_time")
-  num timeCompleted;
+  @MapKey('completed_time')
+  late num timeCompleted;
 
-  @MapKey("seeding_time")
-  int timeSeeding;
+  @MapKey('seeding_time')
+  late int timeSeeding;
 
-  String label;
+  late String label;
 
-  @MapKey("tracker_host")
-  String trackerHost;
+  @MapKey('tracker_host')
+  late String trackerHost;
 
   @override
   String toString() {
@@ -104,17 +104,17 @@ class TorrentListItem {
 
 @customDeserialize
 class SessionStatus {
-  @MapKey("upload_rate")
-  num totalUploadRate;
+  @MapKey('upload_rate')
+  late num totalUploadRate;
 
-  @MapKey("download_rate")
-  num totalDownloadRate;
+  @MapKey('download_rate')
+  late num totalDownloadRate;
 
-  @MapKey("payload_upload_rate")
-  num payloadUploadRate;
+  @MapKey('payload_upload_rate')
+  late num payloadUploadRate;
 
-  @MapKey("payload_download_rate")
-  num payloadDownloadRate;
+  @MapKey('payload_download_rate')
+  late num payloadDownloadRate;
 
   @override
   String toString() {
@@ -124,126 +124,126 @@ class SessionStatus {
 
 @customDeserialize
 class FilterTree {
-  @MapKey("state")
-  List<Object> statusFilters;
+  @MapKey('state')
+  late List<Object> statusFilters;
 
-  @MapKey("label")
-  List<Object> labelFilters;
+  @MapKey('label')
+  late List<Object> labelFilters;
 
-  @MapKey("tracker_host")
-  List<Object> trackerFilters;
+  @MapKey('tracker_host')
+  late List<Object> trackerFilters;
 }
 
 @customDeserialize
 class TorrentDetail {
-  String name;
+  late String name;
 
-  String hash;
+  late String hash;
 
-  String comment;
+  late String comment;
 
-  String label;
+  late String label;
 
-  @MapKey("num_files")
-  int files;
+  @MapKey('num_files')
+  late int files;
 
-  @MapKey("active_time")
-  int activeTime;
+  @MapKey('active_time')
+  late int activeTime;
 
-  @MapKey("seeding_time")
-  int seedingTime;
+  @MapKey('seeding_time')
+  late int seedingTime;
 
-  @MapKey("time_added")
-  num addedTime;
+  @MapKey('time_added')
+  late num addedTime;
 
-  @MapKey("completed_time")
-  num timeCompleted;
+  @MapKey('completed_time')
+  late num timeCompleted;
 
-  bool private;
+  late bool private;
 
-  @MapKey("total_payload_upload")
-  int uploadedInThisSession;
+  @MapKey('total_payload_upload')
+  late int uploadedInThisSession;
 
-  @MapKey("total_uploaded")
-  int totalUploaded;
+  @MapKey('total_uploaded')
+  late int totalUploaded;
 
-  @MapKey("total_payload_download")
-  int downloadedInThisSesssion;
+  @MapKey('total_payload_download')
+  late int downloadedInThisSesssion;
 
-  @MapKey("all_time_download")
-  int totalDownloaded;
+  @MapKey('all_time_download')
+  late int totalDownloaded;
 
-  @MapKey("total_size")
-  int totalSize;
+  @MapKey('total_size')
+  late int totalSize;
 
-  @MapKey("total_wanted")
-  int totalWanted;
+  @MapKey('total_wanted')
+  late int totalWanted;
 
-  @MapKey("total_done")
-  int totalDone;
+  @MapKey('total_done')
+  late int totalDone;
 
-  @MapKey("download_payload_rate")
-  int downloadPayloadRate;
+  @MapKey('download_payload_rate')
+  late int downloadPayloadRate;
 
-  @MapKey("upload_payload_rate")
-  int uploadPayloadRate;
+  @MapKey('upload_payload_rate')
+  late int uploadPayloadRate;
 
-  String tracker;
+  late String tracker;
 
-  String message;
+  late String message;
 
-  @MapKey("tracker_status")
-  String trackerStatus;
+  @MapKey('tracker_status')
+  late String trackerStatus;
 
-  num eta;
+  late num eta;
 
-  double ratio;
+  late double ratio;
 
-  @MapKey("save_path")
-  String path;
+  @MapKey('save_path')
+  late String path;
 
-  @MapKey("tracker_host")
-  String trackerHost;
+  @MapKey('tracker_host')
+  late String trackerHost;
 
-  @MapKey("num_pieces")
-  int pieces;
+  @MapKey('num_pieces')
+  late int pieces;
 
-  @MapKey("piece_length")
-  int pieceLength;
+  @MapKey('piece_length')
+  late int pieceLength;
 
-  @MapKey("total_seeds")
-  int totalSeeds;
+  @MapKey('total_seeds')
+  late int totalSeeds;
 
-  @MapKey("num_seeds")
-  int connectedSeeds;
+  @MapKey('num_seeds')
+  late int connectedSeeds;
 
-  @MapKey("total_peers")
-  int totalPeers;
+  @MapKey('total_peers')
+  late int totalPeers;
 
-  @MapKey("num_peers")
-  int connectedPeers;
+  @MapKey('num_peers')
+  late int connectedPeers;
 
-  @MapKey("is_auto_managed")
-  bool isAutoManaged;
+  @MapKey('is_auto_managed')
+  late bool isAutoManaged;
 
-  @MapKey("is_finished")
-  bool isFinished;
+  @MapKey('is_finished')
+  late bool isFinished;
 
-  String state;
+  late String state;
 
-  double progress;
+  late double progress;
 
-  @MapKey("seed_rank")
-  int seedRank;
+  @MapKey('seed_rank')
+  late int seedRank;
 
-  @MapKey("next_announce")
-  int nextAnnounce;
+  @MapKey('next_announce')
+  late int nextAnnounce;
 
-  @MapKey("seeds_peers_ratio")
-  double seedsPeersRatio;
+  @MapKey('seeds_peers_ratio')
+  late double seedsPeersRatio;
 
-  @MapKey("distributed_copies")
-  double distributedCopies;
+  @MapKey('distributed_copies')
+  late double distributedCopies;
 
   @override
   String toString() {
@@ -253,142 +253,142 @@ class TorrentDetail {
 
 @customDeserialize
 class TorrentFiles {
-  @MapKey("file_priorities")
-  List<int> filePriorities;
+  @MapKey('file_priorities')
+  late List<int> filePriorities;
 
-  @MapKey("file_progress")
-  List<double> fileProgress;
+  @MapKey('file_progress')
+  late List<double> fileProgress;
 
-  List<TorrentFile> files;
+  late List<TorrentFile> files;
 }
 
 @customDeserialize
 class TorrentFile {
-  int index;
+  late int index;
 
-  int size;
+  late int size;
 
-  int offset;
+  late int offset;
 
-  String path;
+  late String path;
 }
 
 
 @customDeserialize
 class Peers {
-  List<Peer> peers;
+  late List<Peer> peers;
 }
 
 @customDeserialize
 class Peer {
-  @MapKey("down_speed")
-  int downSpeed;
+  @MapKey('down_speed')
+  late int downSpeed;
 
-  @MapKey("up_speed")
-  int upSpeed;
+  @MapKey('up_speed')
+  late int upSpeed;
 
-  String country;
+  late String country;
 
-  String client;
+  late String client;
 
-  String ip;
+  late String ip;
 
-  double progress;
+  late double progress;
 
-  int seed;
+  late int seed;
 }
 
 @customDeserialize
 class TorrentOptions {
-  @MapKey("is_auto_managed")
-  bool isAutoManaged;
+  @MapKey('is_auto_managed')
+  late bool isAutoManaged;
 
-  @MapKey("prioritize_first_last")
-  bool prioritizeFirstLast;
+  @MapKey('prioritize_first_last')
+  late bool prioritizeFirstLast;
 
-  @MapKey("max_connections")
-  int maxConnections;
+  @MapKey('max_connections')
+  late int maxConnections;
 
-  @MapKey("max_upload_slots")
-  int maxUploadSlots;
+  @MapKey('max_upload_slots')
+  late int maxUploadSlots;
 
-  @MapKey("max_upload_speed")
-  num maxUploadSpeed;
+  @MapKey('max_upload_speed')
+  late num maxUploadSpeed;
 
-  @MapKey("max_download_speed")
-  num maxDownloadSpeed;
+  @MapKey('max_download_speed')
+  late num maxDownloadSpeed;
 
-  @MapKey("stop_at_ratio")
-  bool stopAtRatio;
+  @MapKey('stop_at_ratio')
+  late bool stopAtRatio;
 
-  @MapKey("remove_at_ratio")
-  bool removeAtRatio;
+  @MapKey('remove_at_ratio')
+  late bool removeAtRatio;
 
-  @MapKey("stop_ratio")
-  num stopRatio;
+  @MapKey('stop_ratio')
+  late num stopRatio;
 
-  @MapKey("move_completed")
-  bool moveCompleted;
+  @MapKey('move_completed')
+  late bool moveCompleted;
 
-  @MapKey("move_completed_path")
-  String moveCompletedPath;
+  @MapKey('move_completed_path')
+  late String moveCompletedPath;
 
-  List<Tracker> trackers;
+  late List<Tracker> trackers;
 }
 
 @customDeserialize
 class Tracker {
-  @MapKey("send_stats")
-  bool sendStats;
+  @MapKey('send_stats')
+  late bool sendStats;
 
-  int fails;
+  late int fails;
 
-  bool verified;
+  late bool verified;
 
-  String url;
+  late String url;
 
-  @MapKey("fail_limit")
-  int failLimit;
+  @MapKey('fail_limit')
+  late int failLimit;
 
-  @MapKey("complete_sent")
-  bool completeSent;
+  @MapKey('complete_sent')
+  late bool completeSent;
 
-  int source;
+  late int source;
 
-  @MapKey("start_sent")
-  bool startSent;
+  @MapKey('start_sent')
+  late bool startSent;
 
-  int tier;
+  late int tier;
 
-  bool updating;
+  late bool updating;
 }
 
 @customDeserialize
 class AddTorrentDefaultOptions {
-  @MapKey("download_location")
-  String downloadPath;
+  @MapKey('download_location')
+  late String downloadPath;
 
-  @MapKey("move_completed")
-  bool moveCompleted;
+  @MapKey('move_completed')
+  late bool moveCompleted;
 
-  @MapKey("move_completed_path")
-  String moveCompletedPath;
+  @MapKey('move_completed_path')
+  late String moveCompletedPath;
 
-  @MapKey("max_download_speed_per_torrent")
-  num downloadSpeedLimit;
+  @MapKey('max_download_speed_per_torrent')
+  late num downloadSpeedLimit;
 
-  @MapKey("max_upload_speed_per_torrent")
-  num uploadSpeedLimit;
+  @MapKey('max_upload_speed_per_torrent')
+  late num uploadSpeedLimit;
 
-  @MapKey("max_connections_per_torrent")
-  num connectionsLimit;
+  @MapKey('max_connections_per_torrent')
+  late num connectionsLimit;
 
-  @MapKey("max_upload_slots_per_torrent")
-  num uploadSlotsLimit;
+  @MapKey('max_upload_slots_per_torrent')
+  late num uploadSlotsLimit;
 
-  @MapKey("add_paused")
-  bool addPaused;
+  @MapKey('add_paused')
+  late bool addPaused;
 
-  @MapKey("prioritize_first_last_pieces")
-  bool prioritiseFirstLastPieces;
+  @MapKey('prioritize_first_last_pieces')
+  late bool prioritiseFirstLastPieces;
 }

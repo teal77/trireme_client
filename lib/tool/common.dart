@@ -20,21 +20,19 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 
-DartObject getAnnotationOfType(DartType type, Element element) {
-  var annotation = element.metadata.firstWhere((e) {
-    if (e.element.kind == ElementKind.CONSTRUCTOR) {
-      return (e.element.enclosingElement as TypeDefiningElement)
-          .type
-          .isAssignableTo(type);
-    } else if (e.element.kind == ElementKind.GETTER) {
-      return (e.element as PropertyAccessorElement)
-          .variable
-          .type
-          .isAssignableTo(type);
-    } else {
-      throw "Annotation of type ${e.element.kind} is not handled";
-    }
+import 'package:source_gen/source_gen.dart';
+
+DartObject? getAnnotationOfType(DartType type, Element element) {
+  var checker = TypeChecker.fromStatic(type);
+  var annotated = checker.firstAnnotationOf(element);
+  if (annotated != null) {
+    return annotated;
   }
-      , orElse: () => null);
-  return annotation?.constantValue;
+  return null;
+}
+
+extension StringToUri on String {
+  Uri toUri() {
+    return Uri.parse(this);
+  }
 }

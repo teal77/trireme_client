@@ -26,34 +26,34 @@ import 'package:rencode/rencode.dart';
 import '../trireme_client.dart';
 
 class DaemonDetector {
-  static const Duration timeout = const Duration(seconds: 30);
+  static const Duration timeout = Duration(seconds: 30);
 
   final String host;
   final int port;
 
-  Completer<DaemonDetails> _completer = new Completer();
+  final Completer<DaemonDetails> _completer = Completer();
   int _requestId = 0;
-  DelugeConnection _deluge1Connection;
-  DelugeConnection _oldDeluge2Connection;
-  DelugeConnection _deluge2Connection;
+  late DelugeConnection _deluge1Connection;
+  late DelugeConnection _oldDeluge2Connection;
+  late DelugeConnection _deluge2Connection;
 
   DaemonDetector(this.host, this.port);
 
   Future<DaemonDetails> detect() {
-    _deluge1Connection = new Deluge1Connection(
+    _deluge1Connection = Deluge1Connection(
         host, port, null, timeout, _receiveDeluge1, _error);
-    _oldDeluge2Connection = new OldDeluge2Connection(
+    _oldDeluge2Connection = OldDeluge2Connection(
         host, port, null, timeout, _receiveOldDeluge2, _error);
-    _deluge2Connection = new Deluge2Connection(
+    _deluge2Connection = Deluge2Connection(
         host, port, null, timeout, _receiveDeluge2, _error);
 
     _getDaemonInfo(_deluge1Connection);
     _getDaemonInfo(_oldDeluge2Connection);
     _getDaemonInfo(_deluge2Connection);
-    new Timer(timeout, () {
+    Timer(timeout, () {
       if (!_completer.isCompleted) {
         _completer
-            .completeError(new DelugeRpcError("Timeout", "Request timed out"));
+            .completeError(DelugeRpcError('Timeout', 'Request timed out'));
       }
     });
     return _completer.future;
@@ -64,7 +64,7 @@ class DaemonDetector {
       await connection.connect();
       var payload = <dynamic>[
         _requestId++,
-        "daemon.info",
+        'daemon.info',
         <dynamic>[],
         <dynamic, dynamic>{}
       ];
@@ -112,13 +112,13 @@ class DaemonDetector {
     if ((response.first as int) == 1) {
       return response[2] as String;
     } else {
-      return "";
+      return '';
     }
   }
 
   void _dispatchResult(X509Certificate cert, String daemonVersion,
       bool isDeluge1, int protocolVersion) {
-    var details = new DaemonDetails(host, port, cert, daemonVersion,
+    var details = DaemonDetails(host, port, cert, daemonVersion,
         protocolVersion, isDeluge1, !isDeluge1);
     if (!_completer.isCompleted) {
       _completer.complete(details);
@@ -139,37 +139,34 @@ class DaemonDetails {
       this.daemonVersion, this.protocolVersion, this.isDeluge1, this.isDeluge2);
 
   @override
-  String toString() => "Daemon at $host:$port, version [$daemonVersion] "
-      "cert: ${daemonCertificate.sha1} isDeluge1: $isDeluge1";
+  String toString() => 'Daemon at $host:$port, version [$daemonVersion] '
+      'cert: ${daemonCertificate.sha1} isDeluge1: $isDeluge1';
 }
 
 class ConnectionFactory {
   final String host;
   final int port;
-  final List<int> pinnedCertificate;
+  final List<int>? pinnedCertificate;
   final Duration timeout;
   final ResponseCallback responseCallback;
   final ErrorCallback errorCallback;
-
-  final Completer<DelugeConnection> _completer =
-      new Completer<DelugeConnection>();
 
   ConnectionFactory(this.host, this.port, this.pinnedCertificate, this.timeout,
       this.responseCallback, this.errorCallback);
 
   Future<DelugeConnection> getConnection() async {
-    return new Future.sync(() async {
-      var daemonDetails = await (new DaemonDetector(host, port)).detect();
+    return Future.sync(() async {
+      var daemonDetails = await (DaemonDetector(host, port)).detect();
       DelugeConnection connection;
       if (daemonDetails.isDeluge1) {
-        connection = new Deluge1Connection(host, port, pinnedCertificate,
+        connection = Deluge1Connection(host, port, pinnedCertificate,
             timeout, responseCallback, errorCallback);
       } else {
         if (daemonDetails.protocolVersion > 0) {
-          connection = new Deluge2Connection(host, port, pinnedCertificate,
+          connection = Deluge2Connection(host, port, pinnedCertificate,
               timeout, responseCallback, errorCallback);
         } else {
-          connection = new OldDeluge2Connection(host, port, pinnedCertificate,
+          connection = OldDeluge2Connection(host, port, pinnedCertificate,
               timeout, responseCallback, errorCallback);
         }
       }
@@ -179,21 +176,20 @@ class ConnectionFactory {
   }
 }
 
-typedef void ResponseCallback(Object response);
-typedef void ErrorCallback(Object error);
+typedef ResponseCallback = void Function(Object response);
+typedef ErrorCallback = void Function(Object error);
 
 abstract class DelugeConnection {
   final String host;
   final int port;
-  final List<int> pinnedCertificate;
+  final List<int>? pinnedCertificate;
   final Duration timeout;
   final ResponseCallback _responseCallback;
   final ErrorCallback _errorCallback;
 
-  SecureSocket _socket;
-  BytesBuilder _partialData = new BytesBuilder();
-
-  Codec<Object, List<int>> _codec = new RencodeCodec().fuse(new ZLibCodec());
+  SecureSocket? _socket;
+  final BytesBuilder _partialData = BytesBuilder();
+  final Codec<Object, List<int>> _codec = RencodeCodec().fuse(ZLibCodec());
 
   DelugeConnection(
     this.host,
@@ -206,9 +202,9 @@ abstract class DelugeConnection {
 
   Future connect() async {
     SecurityContext securityContext;
-    if (pinnedCertificate != null && pinnedCertificate.isNotEmpty) {
-      securityContext = new SecurityContext();
-      securityContext.setTrustedCertificatesBytes(pinnedCertificate);
+    if (pinnedCertificate != null && pinnedCertificate!.isNotEmpty) {
+      securityContext = SecurityContext();
+      securityContext.setTrustedCertificatesBytes(pinnedCertificate!);
     } else {
       securityContext = SecurityContext.defaultContext;
     }
@@ -218,7 +214,7 @@ abstract class DelugeConnection {
         context: securityContext,
         onBadCertificate: _onBadCertificate);
 
-    _socket.listen((response) {
+    _socket!.listen((response) {
       receive(response);
     }, onError: (Object e) {
       _errorCallback(e);
@@ -231,10 +227,10 @@ abstract class DelugeConnection {
   bool _onBadCertificate(X509Certificate badCert) {
     //if we dont have a pinned certificate, accept all certs.
     //this is necessary because the Deluge daemon uses self signed certificates
-    return pinnedCertificate == null || pinnedCertificate.isEmpty;
+    return pinnedCertificate == null || pinnedCertificate!.isEmpty;
   }
 
-  X509Certificate get certificate => _socket?.peerCertificate;
+  X509Certificate get certificate => _socket!.peerCertificate!;
 
   void receive(List<int> response);
 
@@ -252,16 +248,18 @@ class Deluge1Connection extends DelugeConnection {
   Deluge1Connection(
       String host,
       int port,
-      List<int> pinnedCert,
+      List<int>? pinnedCert,
       Duration timeout,
       ResponseCallback responseCallback,
       ErrorCallback errorCallback)
       : super(host, port, pinnedCert, timeout, responseCallback, errorCallback);
 
+  @override
   void send(Object object) {
-    _socket.add(_codec.encode([object]));
+    _socket?.add(_codec.encode([object]));
   }
 
+  @override
   void receive(List<int> response) {
     try {
       Object responseObj;
@@ -278,7 +276,7 @@ class Deluge1Connection extends DelugeConnection {
         //nop
       } catch (e) {
         //catch zlib error
-        if (e.toString().contains("Filter error")) {
+        if (e.toString().contains('Filter error')) {
           //nop
         } else {
           rethrow;
@@ -305,7 +303,7 @@ class Deluge1Connection extends DelugeConnection {
       DelugeClient*/
     } catch (e) {
       //catch zlib error
-      if (e.toString().contains("Filter error")) {
+      if (e.toString().contains('Filter error')) {
         //nop
       } else {
         rethrow;
@@ -317,42 +315,44 @@ class Deluge1Connection extends DelugeConnection {
 class OldDeluge2Connection extends DelugeConnection {
   static const int headerSize = 5;
 
-  static final int headerChar = ascii.encode("D").first;
+  static final int headerChar = ascii.encode('D').first;
 
-  int _responseLength;
+  int _responseLength = 0;
 
   OldDeluge2Connection(
       String host,
       int port,
-      List<int> pinnedCert,
+      List<int>? pinnedCert,
       Duration timeout,
       ResponseCallback responseCallback,
       ErrorCallback errorCallback)
       : super(host, port, pinnedCert, timeout, responseCallback, errorCallback);
 
+  @override
   void send(Object object) {
     var request = _codec.encode([object]);
-    _socket.add(_getRequestHeader(request.length));
-    _socket.add(_codec.encode([object]));
+    _socket?.add(_getRequestHeader(request.length));
+    _socket?.add(_codec.encode([object]));
   }
 
   List<int> _getRequestHeader(int requestLength) {
-    BytesBuilder bb = new BytesBuilder();
+    var bb = BytesBuilder();
     bb.addByte(headerChar);
 
-    var bd = new ByteData(4);
+    var bd = ByteData(4);
     bd.setInt32(0, requestLength);
     bb.add(bd.buffer.asUint8List());
     return bb.takeBytes();
   }
 
+  @override
   void receive(List<int> response) {
     if (response.first == headerChar && response.length == headerSize) {
       //clear any previous partial data, that request will timeout
       _partialData.clear();
 
       _responseLength =
-          new Uint8List.fromList(response.getRange(1, headerSize).toList())
+          Uint8List.fromList(response.getRange(1, headerSize).toList())
               .buffer
               .asByteData()
               .getInt32(0);
@@ -372,43 +372,45 @@ class Deluge2Connection extends DelugeConnection {
 
   static final int protocolVersion = 1;
 
-  int _responseLength;
+  int _responseLength = 0;
 
   Deluge2Connection(
       String host,
       int port,
-      List<int> pinnedCert,
+      List<int>? pinnedCert,
       Duration timeout,
       ResponseCallback responseCallback,
       ErrorCallback errorCallback)
       : super(host, port, pinnedCert, timeout, responseCallback, errorCallback);
 
+  @override
   void send(Object object) {
     var request = _codec.encode([object]);
-    _socket.add(_getRequestHeader(request.length));
-    _socket.add(_codec.encode([object]));
+    _socket?.add(_getRequestHeader(request.length));
+    _socket?.add(_codec.encode([object]));
   }
 
   List<int> _getRequestHeader(int requestLength) {
-    BytesBuilder bb = new BytesBuilder();
+    var bb = BytesBuilder();
     bb.addByte(protocolVersion);
 
-    var bd = new ByteData(4);
+    var bd = ByteData(4);
     bd.setUint32(0, requestLength);
     bb.add(bd.buffer.asUint8List());
     return bb.takeBytes();
   }
 
+  @override
   void receive(List<int> response) {
     if (_partialData.isEmpty) {
       if (response.length < headerSize) {
         return;
       }
       if (response.first != protocolVersion) {
-        throw "Unknown protocol version ${response.first}";
+        throw 'Unknown protocol version ${response.first}';
       }
       _responseLength =
-          new Uint8List.fromList(response.getRange(1, headerSize).toList())
+          Uint8List.fromList(response.getRange(1, headerSize).toList())
               .buffer
               .asByteData()
               .getUint32(0);

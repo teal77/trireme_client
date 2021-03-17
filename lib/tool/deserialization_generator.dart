@@ -27,12 +27,17 @@ import 'package:trireme_client/deserialization.dart';
 
 import 'common.dart';
 
+Builder deserializationGenerator(BuilderOptions options) => SharedPartBuilder([
+      DeserializationGenerator(),
+      DeserializationFactoryGenerator()
+    ], 'deserialize', allowSyntaxErrors: true);
+
 class DeserializationGenerator
     extends GeneratorForAnnotation<CustomDeserialize> {
   @override
   FutureOr<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
-    return new _DeserializationCodeGenerator(element.library)
+    return _DeserializationCodeGenerator(element.library!)
         .generate(element as ClassElement);
   }
 }
@@ -43,12 +48,13 @@ class _DeserializationCodeGenerator extends StringBuffer {
   _DeserializationCodeGenerator(this.library);
 
   String generate(ClassElement clazz) {
-    writeln("class \$${clazz
-        .name}CustomDeserializer extends CustomDeserializer<${clazz.name}>{");
-    writeln("${clazz.name} deserialize(Object o) {");
+    writeln(
+        'class \$${clazz.name}CustomDeserializer extends CustomDeserializer<${clazz.name}>{');
+    writeln('@override');
+    writeln('${clazz.name} deserialize(Object o) {');
     generateDeserializationMethodBody(clazz);
-    writeln("}");
-    writeln("}");
+    writeln('}');
+    writeln('}');
     generateDeserializationKeyList(clazz);
 
     return toString();
@@ -59,7 +65,7 @@ class _DeserializationCodeGenerator extends StringBuffer {
     return clazz.fields.where((f) {
       if (f.metadata.isNotEmpty) {
         var excludeAnnotation =
-            getAnnotationOfType(library.getType("Exclude").type, f);
+            getAnnotationOfType(library.getType('Exclude')!.thisType, f);
         return excludeAnnotation == null;
       } else {
         return true;
@@ -68,65 +74,64 @@ class _DeserializationCodeGenerator extends StringBuffer {
   }
 
   void generateDeserializationMethodBody(ClassElement clazz) {
-    writeln("var oAsMap = (o as Map<Object, Object>);");
-    writeln("var map = oAsMap.cast<String, Object>();");
-    writeln("${clazz.name} item = new ${clazz.name}();");
+    writeln('var oAsMap = (o as Map<Object, Object>);');
+    writeln('var map = oAsMap.cast<String, Object>();');
+    writeln('var item = ${clazz.name}();');
     getFieldsWithoutExcludedAnnotation(clazz).forEach((f) {
-      String mapKey = getMapKeyOfField(f);
+      var mapKey = getMapKeyOfField(f);
 
-      if (f.type.name == "List") {
+      if (f.type.name == 'List') {
         var listTypeParam = (f.type as ParameterizedType).typeArguments.first;
-        if (isCustomDeserializableType(listTypeParam.element)) {
-          write("CustomDeserializer<$listTypeParam> deserializer");
+        if (isCustomDeserializableType(listTypeParam.element!)) {
           writeln(
-              "= new CustomDeserializerFactory().createDeserializer(${listTypeParam}) as CustomDeserializer<$listTypeParam>;");
-          writeln("item.${f
-              .name} = (map['$mapKey'] as List<Object>)?.map((e) => deserializer.deserialize(e))?.toList();");
+              'var deserializer = CustomDeserializerFactory().createDeserializer($listTypeParam) as CustomDeserializer<$listTypeParam>;');
+          writeln(
+              "item.${f.name} = (map['$mapKey'] as List<Object>).map((e) => deserializer.deserialize(e)).toList();");
         } else {
-          writeln("item.${f.name} = (map['$mapKey'] as ${f.type
-              .name})?.cast<$listTypeParam>();");
+          writeln(
+              "item.${f.name} = (map['$mapKey'] as ${f.type.name}).cast<$listTypeParam>();");
         }
       } else {
         writeln("item.${f.name} = map['$mapKey'] as ${f.type.name};");
       }
     });
-    writeln("return item;");
+    writeln('return item;');
   }
 
   String getMapKeyOfField(FieldElement f) {
     var mapKeyAnnotation =
-        getAnnotationOfType(library.getType("MapKey").type, f);
+        getAnnotationOfType(library.getType('MapKey')!.thisType, f);
     return mapKeyAnnotation == null
         ? f.name
-        : mapKeyAnnotation.getField("key").toStringValue();
+        : mapKeyAnnotation.getField('key')!.toStringValue()!;
   }
 
   bool isCustomDeserializableType(Element e) {
-    return getAnnotationOfType(library.getType("CustomDeserialize").type, e) !=
+    return getAnnotationOfType(library.getType('CustomDeserialize')!.thisType, e) !=
         null;
   }
 
   void generateDeserializationKeyList(ClassElement clazz) {
     String getCamelCaseName(String name) {
-      return "${name[0].toLowerCase()}${name.substring(1)}";
+      return '${name[0].toLowerCase()}${name.substring(1)}';
     }
 
-    writeln("const ${getCamelCaseName(clazz.name)}Keys = const [");
+    writeln('const ${getCamelCaseName(clazz.name)}Keys = [');
     getFieldsWithoutExcludedAnnotation(clazz).forEach((f) {
       writeln("'${getMapKeyOfField(f)}',");
     });
-    writeln("];");
+    writeln('];');
   }
 }
 
 class DeserializationFactoryGenerator extends Generator {
   @override
   FutureOr<String> generate(LibraryReader library, BuildStep buildStep) {
-    var factoryClass = library.element.getType("CustomDeserializerFactory");
+    var factoryClass = library.element.getType('CustomDeserializerFactory');
     if (factoryClass == null) {
-      return null;
+      return '';
     } else {
-      return new _DeserializationFactoryGenerator()
+      return _DeserializationFactoryGenerator()
           .generate(factoryClass, library.element);
     }
   }
@@ -135,22 +140,21 @@ class DeserializationFactoryGenerator extends Generator {
 class _DeserializationFactoryGenerator extends StringBuffer {
   Future<String> generate(ClassElement factoryClass, LibraryElement l) async {
     writeln(
-        "class \$CustomDeserializerFactoryImpl extends CustomDeserializerFactory {");
-    writeln("\$CustomDeserializerFactoryImpl() : super._();");
-    writeln("@override");
-    writeln("CustomDeserializer createDeserializer(Type modelClass) {");
-    writeln("switch(modelClass) {");
+        'class \$CustomDeserializerFactoryImpl extends CustomDeserializerFactory {');
+    writeln('\$CustomDeserializerFactoryImpl() : super._();');
+    writeln('@override');
+    writeln('CustomDeserializer createDeserializer(Type modelClass) {');
+    writeln('switch(modelClass) {');
     l.definingCompilationUnit.types
         .where((e) => e.metadata.isNotEmpty)
         .forEach((e) {
-      writeln("case ${e.name}:");
-      writeln("return new \$${e.name}CustomDeserializer();");
-      writeln("break;");
+      writeln('case ${e.name}:');
+      writeln('return \$${e.name}CustomDeserializer();');
     });
-    writeln("}");
+    writeln('}');
     writeln("throw 'Unsupported type \$modelClass';");
-    writeln("}");
-    writeln("}");
+    writeln('}');
+    writeln('}');
 
     return toString();
   }

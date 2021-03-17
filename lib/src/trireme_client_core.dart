@@ -26,29 +26,29 @@ import '../trireme_client.dart';
 import 'deluge_connection.dart';
 
 class DelugeClient {
-  bool _log = false;
+  final bool _log = false;
 
   static const int rpcResponse = 1;
   static const int rpcError = 2;
   static const int rpcEvent = 3;
 
-  static const List<Object> emptyList = const [];
-  static const Map<Object, Object> emptyMap = const {};
+  static const List<Object> emptyList = [];
+  static const Map<Object, Object> emptyMap = {};
 
-  final Duration timeoutDuration = new Duration(seconds: 15);
+  final Duration timeoutDuration = Duration(seconds: 15);
 
   final String host;
   final int port;
   final String username;
   final String _password;
-  final List<int> pinnedCertificate;
+  final List<int>? pinnedCertificate;
+  final Map<int, _Request> _requests = {};
 
   int _requestId = 0;
-  DelugeConnection _connection;
-  Map<int, _Request> _requests = {};
-  StreamController<DelugeRpcEvent> _streamController;
+  DelugeConnection? _connection;
+  late StreamController<DelugeRpcEvent> _streamController;
 
-  Future _connecting;
+  Future? _connecting;
 
   DelugeClient(this.host, this.port, this.username, this._password,
       {this.pinnedCertificate}) {
@@ -56,21 +56,21 @@ class DelugeClient {
   }
 
   void init() {
-    _streamController = new StreamController.broadcast();
+    _streamController = StreamController.broadcast();
   }
 
   int get latestRequestId => _requestId;
 
   void _connect() {
     if (_connection == null) {
-      var connectionFactory = new ConnectionFactory(host, port,
+      var connectionFactory = ConnectionFactory(host, port,
           pinnedCertificate, timeoutDuration, _receive, _errorCallback);
       _connecting = connectionFactory.getConnection().then<int>((connection) {
         _connection = connection;
         return login();
       }).whenComplete(() => _connecting = null);
     } else {
-      _connecting = _connection
+      _connecting = _connection!
           .connect()
           .then<int>((dynamic _) => login())
           .whenComplete(() => _connecting = null);
@@ -78,9 +78,9 @@ class DelugeClient {
   }
 
   Future<T> rpcCall<T>(String name,
-      [List<Object> args, Map<Object, Object> kwargs]) async {
-    return new Future.sync(() async {
-      if (_connection == null || !_connection.isConnected()) {
+      [List<Object>? args, Map<Object, Object>? kwargs]) async {
+    return Future.sync(() async {
+      if (_connection == null || !_connection!.isConnected()) {
         if (_connecting == null) {
           _connect();
         }
@@ -97,49 +97,47 @@ class DelugeClient {
 
   Future<int> login() async {
     if (_connection is Deluge1Connection) {
-      return await _sendCall<int>("daemon.login", [username, _password]);
+      return await _sendCall<int>('daemon.login', [username, _password]);
     } else {
-      return await _sendCall<int>("daemon.login", [username, _password],
-          {"client_version": "Trireme Client v0.0.1"});
+      return await _sendCall<int>('daemon.login', [username, _password],
+          {'client_version': 'Trireme Client v0.0.1'});
     }
   }
 
   Future<T> _sendCall<T>(String name,
-      [List<Object> args, Map<Object, Object> kwargs]) async {
-    return new Future.sync(() async {
+      [List<Object>? args, Map<Object, Object>? kwargs]) async {
+    return Future.sync(() async {
       //Captures all exceptions in this block and throws them through our Future.
 
       _requestId++;
-      var payload = [_requestId, name]
-        ..add(args ?? emptyList)
-        ..add(kwargs ?? emptyMap);
-      _connection.send(payload);
+      var payload = [_requestId, name, args ?? emptyList, kwargs ?? emptyMap];
+      _connection!.send(payload);
 
       _registerForTimeout(_requestId);
 
-      if (_log) print(">>> $payload");
+      if (_log) print('>>> $payload');
 
-      var r = new _Request<T>(name, _requestId, payload);
+      var r = _Request<T>(name, _requestId, payload);
       _requests[_requestId] = r;
       return r.completer.future;
     });
   }
 
   void _receive(Object responseObj) {
-    List<Object> response = responseObj as List<Object>;
+    var response = responseObj as List<Object>;
 
-    if (_log) print("<<< $response");
+    if (_log) print('<<< $response');
 
     if (response[0] == rpcResponse) {
-      int requestId = response[1] as int;
+      var requestId = response[1] as int;
       var r = _requests.remove(requestId);
       r?.onResponse(response[2]);
     } else if (response[0] == rpcError) {
-      int requestId = response[1] as int;
+      var requestId = response[1] as int;
       var r = _requests.remove(requestId);
 
       if (_connection is Deluge1Connection) {
-        List<Object> delugeRpcError = response[2] as List<Object>;
+        var delugeRpcError = response[2] as List<Object>;
         r?.onError(delugeRpcError[0] as String, delugeRpcError[1] as String,
             delugeRpcError[2] as String);
       } else {
@@ -147,11 +145,11 @@ class DelugeClient {
             response[5] as String);
       }
     } else if (response[0] == rpcEvent) {
-      var event = new DelugeRpcEvent(
+      var event = DelugeRpcEvent(
           response[1] as String, response[2] as List<Object>);
       if (_streamController.hasListener) _streamController.add(event);
     } else {
-      throw "Unkown response type ${response[0]}";
+      throw 'Unknown response type ${response[0]}';
     }
   }
 
@@ -165,17 +163,17 @@ class DelugeClient {
   }
 
   void _registerForTimeout(int requestId) {
-    new Timer(timeoutDuration, () {
+    Timer(timeoutDuration, () {
       var r = _requests.remove(requestId);
       if (r != null) {
         r.timeout();
-        _connection.disconnect();
+        _connection!.disconnect();
       }
     });
   }
 
   void dispose() {
-    if (_log) print("Client disposed");
+    if (_log) print('Client disposed');
 
     _requests.clear();
     _connection?.disconnect();
@@ -187,14 +185,14 @@ class _Request<T> {
   final String apiName;
   final int requestId;
   final Object payload;
-  final Completer<T> completer = new Completer<T>();
+  final Completer<T> completer = Completer<T>();
 
   _Request(this.apiName, this.requestId, this.payload);
 
   void onResponse(Object response) {
     if (!completer.isCompleted) {
       if (isTypeOf<T, Response>()) {
-        completer.complete(new Response<dynamic>(apiName, requestId, response) as T);
+        completer.complete(Response<dynamic>(apiName, requestId, response) as T);
       } else {
         completer.complete(response as T);
       }
@@ -202,12 +200,12 @@ class _Request<T> {
   }
 
   void onError(String type, String msg, String traceback) {
-    var delugeRpcError = new DelugeRpcError(type, msg, traceback);
+    var delugeRpcError = DelugeRpcError(type, msg, traceback);
     _dispatchError(delugeRpcError);
   }
 
   void timeout() {
-    var error = new DelugeRpcError("Timeout", "Request timed out");
+    var error = DelugeRpcError('Timeout', 'Request timed out');
     _dispatchError(error);
   }
 
