@@ -62,11 +62,11 @@ class DaemonDetector {
   void _getDaemonInfo(DelugeConnection connection) async {
     try {
       await connection.connect();
-      var payload = <dynamic>[
+      var payload = <Object>[
         _requestId++,
         'daemon.info',
-        <dynamic>[],
-        <dynamic, dynamic>{}
+        <Object>[],
+        <Object, Object>{}
       ];
       connection.send(payload);
     } catch (e, s) {
@@ -76,7 +76,7 @@ class DaemonDetector {
     }
   }
 
-  void _receiveDeluge1(Object response) async {
+  void _receiveDeluge1(Object? response) async {
     var cert = _deluge1Connection.certificate;
     _deluge1Connection.disconnect();
     _oldDeluge2Connection.disconnect();
@@ -84,7 +84,7 @@ class DaemonDetector {
     _dispatchResult(cert, _getDaemonVersion(response), true, 0);
   }
 
-  void _receiveOldDeluge2(Object response) async {
+  void _receiveOldDeluge2(Object? response) async {
     var cert = _oldDeluge2Connection.certificate;
     _deluge1Connection.disconnect();
     _oldDeluge2Connection.disconnect();
@@ -92,7 +92,7 @@ class DaemonDetector {
     _dispatchResult(cert, _getDaemonVersion(response), false, 0);
   }
 
-  void _receiveDeluge2(Object response) async {
+  void _receiveDeluge2(Object? response) async {
     var cert = _deluge2Connection.certificate;
     _deluge1Connection.disconnect();
     _oldDeluge2Connection.disconnect();
@@ -107,8 +107,8 @@ class DaemonDetector {
     }
   }
 
-  String _getDaemonVersion(Object object) {
-    var response = object as List<Object>;
+  String _getDaemonVersion(Object? object) {
+    var response = object as List<Object?>;
     if ((response.first as int) == 1) {
       return response[2] as String;
     } else {
@@ -176,7 +176,7 @@ class ConnectionFactory {
   }
 }
 
-typedef ResponseCallback = void Function(Object response);
+typedef ResponseCallback = void Function(Object? response);
 typedef ErrorCallback = void Function(Object error);
 
 abstract class DelugeConnection {
@@ -189,7 +189,7 @@ abstract class DelugeConnection {
 
   SecureSocket? _socket;
   final BytesBuilder _partialData = BytesBuilder();
-  final Codec<Object, List<int>> _codec = RencodeCodec().fuse(ZLibCodec());
+  final Codec<Object?, List<int>> _codec = RencodeCodec().fuse(ZLibCodec());
 
   DelugeConnection(
     this.host,
@@ -262,7 +262,7 @@ class Deluge1Connection extends DelugeConnection {
   @override
   void receive(List<int> response) {
     try {
-      Object responseObj;
+      Object? responseObj;
       try {
         responseObj = _codec.decode(response);
 

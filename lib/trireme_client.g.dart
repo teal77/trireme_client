@@ -27,7 +27,7 @@ class _$TriremeClientImpl extends TriremeClient {
 
   @override
   Future<List<String>> getSessionState() async {
-    var result = await _client.rpcCall<List<Object>>('core.get_session_state');
+    var result = await _client.rpcCall<List<Object?>>('core.get_session_state');
     var result2 = result.cast<String>();
     return result2;
   }
@@ -37,7 +37,7 @@ class _$TriremeClientImpl extends TriremeClient {
       {List<String> sessionStatusKeys = sessionStatusKeys}) async {
     var result = await _client.rpcCall<Response<Object>>(
         'core.get_session_status', [sessionStatusKeys]);
-    var resultUnwrapped = result.response as Map<Object, Object>;
+    var resultUnwrapped = result.response as Map<Object, Object?>;
     var deserializer = CustomDeserializerFactory()
         .createDeserializer(SessionStatus) as CustomDeserializer<SessionStatus>;
     var result2 = deserializer.deserialize(resultUnwrapped);
@@ -93,7 +93,7 @@ class _$TriremeClientImpl extends TriremeClient {
   @override
   Future<List<Object>> removeTorrents(
       List<String> torrentIds, bool removeData) async {
-    var result = await _client.rpcCall<List<Object>>(
+    var result = await _client.rpcCall<List<Object?>>(
         'core.remove_torrents', [torrentIds, removeData]);
     var result2 = result.cast<Object>();
     return result2;
@@ -172,7 +172,7 @@ class _$TriremeClientImpl extends TriremeClient {
       String torrentId, List<String> keys) async {
     var result = await _client.rpcCall<Response<Object>>(
         'core.get_torrent_status', [torrentId, keys]);
-    var resultUnwrapped = result.response as Map<Object, Object>;
+    var resultUnwrapped = result.response as Map<Object, Object?>;
     var result2 = resultUnwrapped.cast<String, Object>();
     return Response(result.apiName, result.requestId, result2);
   }
@@ -182,7 +182,7 @@ class _$TriremeClientImpl extends TriremeClient {
       {List<String> keys = torrentDetailKeys}) async {
     var result = await _client.rpcCall<Response<Object>>(
         'core.get_torrent_status', [torrentId, keys]);
-    var resultUnwrapped = result.response as Map<Object, Object>;
+    var resultUnwrapped = result.response as Map<Object, Object?>;
     var deserializer = CustomDeserializerFactory()
         .createDeserializer(TorrentDetail) as CustomDeserializer<TorrentDetail>;
     var result2 = deserializer.deserialize(resultUnwrapped);
@@ -194,7 +194,7 @@ class _$TriremeClientImpl extends TriremeClient {
       {List<String> keys = torrentFilesKeys}) async {
     var result = await _client.rpcCall<Response<Object>>(
         'core.get_torrent_status', [torrentId, keys]);
-    var resultUnwrapped = result.response as Map<Object, Object>;
+    var resultUnwrapped = result.response as Map<Object, Object?>;
     var deserializer = CustomDeserializerFactory()
         .createDeserializer(TorrentFiles) as CustomDeserializer<TorrentFiles>;
     var result2 = deserializer.deserialize(resultUnwrapped);
@@ -206,7 +206,7 @@ class _$TriremeClientImpl extends TriremeClient {
       {List<String> keys = peersKeys}) async {
     var result = await _client.rpcCall<Response<Object>>(
         'core.get_torrent_status', [torrentId, keys]);
-    var resultUnwrapped = result.response as Map<Object, Object>;
+    var resultUnwrapped = result.response as Map<Object, Object?>;
     var deserializer = CustomDeserializerFactory().createDeserializer(Peers)
         as CustomDeserializer<Peers>;
     var result2 = deserializer.deserialize(resultUnwrapped);
@@ -218,7 +218,7 @@ class _$TriremeClientImpl extends TriremeClient {
       {List<String> keys = torrentOptionsKeys}) async {
     var result = await _client.rpcCall<Response<Object>>(
         'core.get_torrent_status', [torrentId, keys]);
-    var resultUnwrapped = result.response as Map<Object, Object>;
+    var resultUnwrapped = result.response as Map<Object, Object?>;
     var deserializer =
         CustomDeserializerFactory().createDeserializer(TorrentOptions)
             as CustomDeserializer<TorrentOptions>;
@@ -232,7 +232,7 @@ class _$TriremeClientImpl extends TriremeClient {
       {List<String> keys = torrentListItemKeys}) async {
     var result = await _client.rpcCall<Response<Object>>(
         'core.get_torrents_status', [filterDict, keys]);
-    var resultUnwrapped = result.response as Map<Object, Object>;
+    var resultUnwrapped = result.response as Map<Object, Object?>;
     var deserializer =
         CustomDeserializerFactory().createDeserializer(TorrentListItem)
             as CustomDeserializer<TorrentListItem>;
@@ -244,7 +244,7 @@ class _$TriremeClientImpl extends TriremeClient {
   @override
   Future<Map<String, Object>> getTorrentsStatus(
       Map<String, Object> filterDict, List<String> keys) async {
-    var result = await _client.rpcCall<Map<Object, Object>>(
+    var result = await _client.rpcCall<Map<Object, Object?>>(
         'core.get_torrents_status', [filterDict, keys]);
     var result2 = result.cast<String, Object>();
     return result2;
@@ -253,7 +253,7 @@ class _$TriremeClientImpl extends TriremeClient {
   @override
   Future<FilterTree> getFilterTree() async {
     var result =
-        await _client.rpcCall<Map<Object, Object>>('core.get_filter_tree');
+        await _client.rpcCall<Map<Object, Object?>>('core.get_filter_tree');
     var deserializer = CustomDeserializerFactory()
         .createDeserializer(FilterTree) as CustomDeserializer<FilterTree>;
     var result2 = deserializer.deserialize(result);
@@ -262,7 +262,7 @@ class _$TriremeClientImpl extends TriremeClient {
 
   @override
   Future<Map<String, Object>> getConfig() async {
-    var result = await _client.rpcCall<Map<Object, Object>>('core.get_config');
+    var result = await _client.rpcCall<Map<Object, Object?>>('core.get_config');
     var result2 = result.cast<String, Object>();
     return result2;
   }
@@ -277,7 +277,7 @@ class _$TriremeClientImpl extends TriremeClient {
   @override
   Future<Map<String, Object>> getConfigValues(List<String> keys) async {
     var result = await _client
-        .rpcCall<Map<Object, Object>>('core.get_config_values', [keys]);
+        .rpcCall<Map<Object, Object?>>('core.get_config_values', [keys]);
     var result2 = result.cast<String, Object>();
     return result2;
   }
@@ -286,7 +286,7 @@ class _$TriremeClientImpl extends TriremeClient {
   Future<AddTorrentDefaultOptions> getAddTorrentDefaultOptions(
       {List<String> keys = addTorrentDefaultOptionsKeys}) async {
     var result = await _client
-        .rpcCall<Map<Object, Object>>('core.get_config_values', [keys]);
+        .rpcCall<Map<Object, Object?>>('core.get_config_values', [keys]);
     var deserializer =
         CustomDeserializerFactory().createDeserializer(AddTorrentDefaultOptions)
             as CustomDeserializer<AddTorrentDefaultOptions>;
@@ -330,7 +330,7 @@ class _$TriremeClientImpl extends TriremeClient {
 
   @override
   Future<Map<String, Object>> getProxySettings() async {
-    var result = await _client.rpcCall<Map<Object, Object>>('core.get_proxy');
+    var result = await _client.rpcCall<Map<Object, Object?>>('core.get_proxy');
     var result2 = result.cast<String, Object>();
     return result2;
   }
@@ -338,7 +338,7 @@ class _$TriremeClientImpl extends TriremeClient {
   @override
   Future<List<String>> getAvailablePlugins() async {
     var result =
-        await _client.rpcCall<List<Object>>('core.get_available_plugins');
+        await _client.rpcCall<List<Object?>>('core.get_available_plugins');
     var result2 = result.cast<String>();
     return result2;
   }
@@ -346,7 +346,7 @@ class _$TriremeClientImpl extends TriremeClient {
   @override
   Future<List<String>> getEnabledPlugins() async {
     var result =
-        await _client.rpcCall<List<Object>>('core.get_enabled_plugins');
+        await _client.rpcCall<List<Object?>>('core.get_enabled_plugins');
     var result2 = result.cast<String>();
     return result2;
   }
@@ -413,7 +413,8 @@ class _$TriremeClientImpl extends TriremeClient {
 
   @override
   Future<List<String>> getKnownAccounts() async {
-    var result = await _client.rpcCall<List<Object>>('core.get_known_accounts');
+    var result =
+        await _client.rpcCall<List<Object?>>('core.get_known_accounts');
     var result2 = result.cast<String>();
     return result2;
   }
@@ -445,7 +446,7 @@ class _$TriremeClientImpl extends TriremeClient {
 
   @override
   Future<List<String>> getLabels() async {
-    var result = await _client.rpcCall<List<Object>>('label.get_labels');
+    var result = await _client.rpcCall<List<Object?>>('label.get_labels');
     var result2 = result.cast<String>();
     return result2;
   }

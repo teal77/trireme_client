@@ -7,8 +7,7 @@ environment:
   sdk: ">=2.12.1 <3.0.0"
 
 dependencies:
-  rencode: "0.0.4"
-  type_helper: "^0.1.0"
+  rencode: "0.0.5"
 
 dev_dependencies:
   test: "^1.16.8"

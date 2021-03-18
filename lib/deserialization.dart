@@ -21,7 +21,7 @@ library trireme_deserialization;
 part 'deserialization.g.dart';
 
 abstract class CustomDeserializer<T> {
-  T deserialize(Object o);
+  T deserialize(Object? o);
 }
 
 abstract class CustomDeserializerFactory {
@@ -142,7 +142,7 @@ class TorrentDetail {
 
   late String comment;
 
-  late String label;
+  late String? label;
 
   @MapKey('num_files')
   late int files;

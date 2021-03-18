@@ -86,11 +86,11 @@ class _ApiCallCodeGenerator extends StringBuffer {
         (method.returnType as ParameterizedType).typeArguments.first;
     var requestType = returnTypeParam.toString();
     if (isList(returnTypeParam)) {
-      requestType = 'List<Object>';
+      requestType = 'List<Object?>';
     } else if (isMap(returnTypeParam)) {
-      requestType = 'Map<Object, Object>';
+      requestType = 'Map<Object, Object?>';
     } else if (isCustomDeserializingType(returnTypeParam)) {
-      requestType = 'Map<Object, Object>';
+      requestType = 'Map<Object, Object?>';
     } else if (isResponseWrapper(returnTypeParam)) {
       requestType = 'Response<Object>';
     }
@@ -111,11 +111,11 @@ class _ApiCallCodeGenerator extends StringBuffer {
       var innerType = (returnTypeParam as ParameterizedType).typeArguments.first;
       var intermediateType = '';
       if (isList(innerType)) {
-        intermediateType = 'List<Object>';
+        intermediateType = 'List<Object?>';
       } else if (isMap(innerType)) {
-        intermediateType = 'Map<Object, Object>';
+        intermediateType = 'Map<Object, Object?>';
       } else if (isCustomDeserializingType(innerType)) {
-        intermediateType = 'Map<Object, Object>';
+        intermediateType = 'Map<Object, Object?>';
       } else {
         intermediateType = innerType.toString();
       }

@@ -18,12 +18,11 @@
 
 import 'dart:async';
 
-import 'package:type_helper/type_helper.dart';
-
 import '../events.dart';
 import '../trireme_client.dart';
 
 import 'deluge_connection.dart';
+import 'type_helper.dart';
 
 class DelugeClient {
   final bool _log = false;
@@ -87,7 +86,7 @@ class DelugeClient {
         await _connecting;
       }
 
-      return _sendCall(name, args, kwargs);
+      return _sendCall<T>(name, args, kwargs);
     });
   }
 
@@ -123,8 +122,8 @@ class DelugeClient {
     });
   }
 
-  void _receive(Object responseObj) {
-    var response = responseObj as List<Object>;
+  void _receive(Object? responseObj) {
+    var response = responseObj as List<Object?>;
 
     if (_log) print('<<< $response');
 
@@ -189,10 +188,10 @@ class _Request<T> {
 
   _Request(this.apiName, this.requestId, this.payload);
 
-  void onResponse(Object response) {
+  void onResponse(Object? response) {
     if (!completer.isCompleted) {
       if (isTypeOf<T, Response>()) {
-        completer.complete(Response<dynamic>(apiName, requestId, response) as T);
+        completer.complete(Response<Object>(apiName, requestId, response) as T);
       } else {
         completer.complete(response as T);
       }

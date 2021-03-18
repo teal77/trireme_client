@@ -9,9 +9,9 @@ part of trireme_deserialization;
 class $TorrentListItemCustomDeserializer
     extends CustomDeserializer<TorrentListItem> {
   @override
-  TorrentListItem deserialize(Object o) {
-    var oAsMap = (o as Map<Object, Object>);
-    var map = oAsMap.cast<String, Object>();
+  TorrentListItem deserialize(Object? o) {
+    var oAsMap = (o as Map<Object, Object?>);
+    var map = oAsMap.cast<String, Object?>();
     var item = TorrentListItem();
     item.name = map['name'] as String;
     item.state = map['state'] as String;
@@ -55,9 +55,9 @@ const torrentListItemKeys = [
 class $SessionStatusCustomDeserializer
     extends CustomDeserializer<SessionStatus> {
   @override
-  SessionStatus deserialize(Object o) {
-    var oAsMap = (o as Map<Object, Object>);
-    var map = oAsMap.cast<String, Object>();
+  SessionStatus deserialize(Object? o) {
+    var oAsMap = (o as Map<Object, Object?>);
+    var map = oAsMap.cast<String, Object?>();
     var item = SessionStatus();
     item.totalUploadRate = map['upload_rate'] as num;
     item.totalDownloadRate = map['download_rate'] as num;
@@ -76,9 +76,9 @@ const sessionStatusKeys = [
 
 class $FilterTreeCustomDeserializer extends CustomDeserializer<FilterTree> {
   @override
-  FilterTree deserialize(Object o) {
-    var oAsMap = (o as Map<Object, Object>);
-    var map = oAsMap.cast<String, Object>();
+  FilterTree deserialize(Object? o) {
+    var oAsMap = (o as Map<Object, Object?>);
+    var map = oAsMap.cast<String, Object?>();
     var item = FilterTree();
     item.statusFilters = (map['state'] as List).cast<Object>();
     item.labelFilters = (map['label'] as List).cast<Object>();
@@ -96,14 +96,14 @@ const filterTreeKeys = [
 class $TorrentDetailCustomDeserializer
     extends CustomDeserializer<TorrentDetail> {
   @override
-  TorrentDetail deserialize(Object o) {
-    var oAsMap = (o as Map<Object, Object>);
-    var map = oAsMap.cast<String, Object>();
+  TorrentDetail deserialize(Object? o) {
+    var oAsMap = (o as Map<Object, Object?>);
+    var map = oAsMap.cast<String, Object?>();
     var item = TorrentDetail();
     item.name = map['name'] as String;
     item.hash = map['hash'] as String;
     item.comment = map['comment'] as String;
-    item.label = map['label'] as String;
+    item.label = map['label'] as String?;
     item.files = map['num_files'] as int;
     item.activeTime = map['active_time'] as int;
     item.seedingTime = map['seeding_time'] as int;
@@ -189,15 +189,15 @@ const torrentDetailKeys = [
 
 class $TorrentFilesCustomDeserializer extends CustomDeserializer<TorrentFiles> {
   @override
-  TorrentFiles deserialize(Object o) {
-    var oAsMap = (o as Map<Object, Object>);
-    var map = oAsMap.cast<String, Object>();
+  TorrentFiles deserialize(Object? o) {
+    var oAsMap = (o as Map<Object, Object?>);
+    var map = oAsMap.cast<String, Object?>();
     var item = TorrentFiles();
     item.filePriorities = (map['file_priorities'] as List).cast<int>();
     item.fileProgress = (map['file_progress'] as List).cast<double>();
     var deserializer = CustomDeserializerFactory()
         .createDeserializer(TorrentFile) as CustomDeserializer<TorrentFile>;
-    item.files = (map['files'] as List<Object>)
+    item.files = (map['files'] as List<Object?>)
         .map((e) => deserializer.deserialize(e))
         .toList();
     return item;
@@ -212,9 +212,9 @@ const torrentFilesKeys = [
 
 class $TorrentFileCustomDeserializer extends CustomDeserializer<TorrentFile> {
   @override
-  TorrentFile deserialize(Object o) {
-    var oAsMap = (o as Map<Object, Object>);
-    var map = oAsMap.cast<String, Object>();
+  TorrentFile deserialize(Object? o) {
+    var oAsMap = (o as Map<Object, Object?>);
+    var map = oAsMap.cast<String, Object?>();
     var item = TorrentFile();
     item.index = map['index'] as int;
     item.size = map['size'] as int;
@@ -233,13 +233,13 @@ const torrentFileKeys = [
 
 class $PeersCustomDeserializer extends CustomDeserializer<Peers> {
   @override
-  Peers deserialize(Object o) {
-    var oAsMap = (o as Map<Object, Object>);
-    var map = oAsMap.cast<String, Object>();
+  Peers deserialize(Object? o) {
+    var oAsMap = (o as Map<Object, Object?>);
+    var map = oAsMap.cast<String, Object?>();
     var item = Peers();
     var deserializer = CustomDeserializerFactory().createDeserializer(Peer)
         as CustomDeserializer<Peer>;
-    item.peers = (map['peers'] as List<Object>)
+    item.peers = (map['peers'] as List<Object?>)
         .map((e) => deserializer.deserialize(e))
         .toList();
     return item;
@@ -252,9 +252,9 @@ const peersKeys = [
 
 class $PeerCustomDeserializer extends CustomDeserializer<Peer> {
   @override
-  Peer deserialize(Object o) {
-    var oAsMap = (o as Map<Object, Object>);
-    var map = oAsMap.cast<String, Object>();
+  Peer deserialize(Object? o) {
+    var oAsMap = (o as Map<Object, Object?>);
+    var map = oAsMap.cast<String, Object?>();
     var item = Peer();
     item.downSpeed = map['down_speed'] as int;
     item.upSpeed = map['up_speed'] as int;
@@ -280,9 +280,9 @@ const peerKeys = [
 class $TorrentOptionsCustomDeserializer
     extends CustomDeserializer<TorrentOptions> {
   @override
-  TorrentOptions deserialize(Object o) {
-    var oAsMap = (o as Map<Object, Object>);
-    var map = oAsMap.cast<String, Object>();
+  TorrentOptions deserialize(Object? o) {
+    var oAsMap = (o as Map<Object, Object?>);
+    var map = oAsMap.cast<String, Object?>();
     var item = TorrentOptions();
     item.isAutoManaged = map['is_auto_managed'] as bool;
     item.prioritizeFirstLast = map['prioritize_first_last'] as bool;
@@ -297,7 +297,7 @@ class $TorrentOptionsCustomDeserializer
     item.moveCompletedPath = map['move_completed_path'] as String;
     var deserializer = CustomDeserializerFactory().createDeserializer(Tracker)
         as CustomDeserializer<Tracker>;
-    item.trackers = (map['trackers'] as List<Object>)
+    item.trackers = (map['trackers'] as List<Object?>)
         .map((e) => deserializer.deserialize(e))
         .toList();
     return item;
@@ -321,9 +321,9 @@ const torrentOptionsKeys = [
 
 class $TrackerCustomDeserializer extends CustomDeserializer<Tracker> {
   @override
-  Tracker deserialize(Object o) {
-    var oAsMap = (o as Map<Object, Object>);
-    var map = oAsMap.cast<String, Object>();
+  Tracker deserialize(Object? o) {
+    var oAsMap = (o as Map<Object, Object?>);
+    var map = oAsMap.cast<String, Object?>();
     var item = Tracker();
     item.sendStats = map['send_stats'] as bool;
     item.fails = map['fails'] as int;
@@ -355,9 +355,9 @@ const trackerKeys = [
 class $AddTorrentDefaultOptionsCustomDeserializer
     extends CustomDeserializer<AddTorrentDefaultOptions> {
   @override
-  AddTorrentDefaultOptions deserialize(Object o) {
-    var oAsMap = (o as Map<Object, Object>);
-    var map = oAsMap.cast<String, Object>();
+  AddTorrentDefaultOptions deserialize(Object? o) {
+    var oAsMap = (o as Map<Object, Object?>);
+    var map = oAsMap.cast<String, Object?>();
     var item = AddTorrentDefaultOptions();
     item.downloadPath = map['download_location'] as String;
     item.moveCompleted = map['move_completed'] as bool;

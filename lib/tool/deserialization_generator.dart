@@ -51,7 +51,7 @@ class _DeserializationCodeGenerator extends StringBuffer {
     writeln(
         'class \$${clazz.name}CustomDeserializer extends CustomDeserializer<${clazz.name}>{');
     writeln('@override');
-    writeln('${clazz.name} deserialize(Object o) {');
+    writeln('${clazz.name} deserialize(Object? o) {');
     generateDeserializationMethodBody(clazz);
     writeln('}');
     writeln('}');
@@ -74,8 +74,8 @@ class _DeserializationCodeGenerator extends StringBuffer {
   }
 
   void generateDeserializationMethodBody(ClassElement clazz) {
-    writeln('var oAsMap = (o as Map<Object, Object>);');
-    writeln('var map = oAsMap.cast<String, Object>();');
+    writeln('var oAsMap = (o as Map<Object, Object?>);');
+    writeln('var map = oAsMap.cast<String, Object?>();');
     writeln('var item = ${clazz.name}();');
     getFieldsWithoutExcludedAnnotation(clazz).forEach((f) {
       var mapKey = getMapKeyOfField(f);
@@ -86,13 +86,13 @@ class _DeserializationCodeGenerator extends StringBuffer {
           writeln(
               'var deserializer = CustomDeserializerFactory().createDeserializer($listTypeParam) as CustomDeserializer<$listTypeParam>;');
           writeln(
-              "item.${f.name} = (map['$mapKey'] as List<Object>).map((e) => deserializer.deserialize(e)).toList();");
+              "item.${f.name} = (map['$mapKey'] as List<Object?>).map((e) => deserializer.deserialize(e)).toList();");
         } else {
           writeln(
               "item.${f.name} = (map['$mapKey'] as ${f.type.name}).cast<$listTypeParam>();");
         }
       } else {
-        writeln("item.${f.name} = map['$mapKey'] as ${f.type.name};");
+        writeln("item.${f.name} = map['$mapKey'] as ${f.type.getDisplayString(withNullability: true)};");
       }
     });
     writeln('return item;');
