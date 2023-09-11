@@ -91,7 +91,7 @@ class TorrentListItem {
   @MapKey('seeding_time')
   late int timeSeeding;
 
-  late String label;
+  late String? label;
 
   @MapKey('tracker_host')
   late String trackerHost;

@@ -65,7 +65,7 @@ class _DeserializationCodeGenerator extends StringBuffer {
     return clazz.fields.where((f) {
       if (f.metadata.isNotEmpty) {
         var excludeAnnotation =
-            getAnnotationOfType(library.getType('Exclude')!.thisType, f);
+            getAnnotationOfType(library.getClass('Exclude')!.thisType, f);
         return excludeAnnotation == null;
       } else {
         return true;
@@ -89,7 +89,7 @@ class _DeserializationCodeGenerator extends StringBuffer {
               "item.${f.name} = (map['$mapKey'] as List<Object?>).map((e) => deserializer.deserialize(e)).toList();");
         } else {
           writeln(
-              "item.${f.name} = (map['$mapKey'] as ${f.type.name}).cast<$listTypeParam>();");
+              "item.${f.name} = (map['$mapKey'] as List? ?? List.empty()).cast<$listTypeParam>();");
         }
       } else {
         writeln("item.${f.name} = map['$mapKey'] as ${f.type.getDisplayString(withNullability: true)};");
@@ -100,14 +100,14 @@ class _DeserializationCodeGenerator extends StringBuffer {
 
   String getMapKeyOfField(FieldElement f) {
     var mapKeyAnnotation =
-        getAnnotationOfType(library.getType('MapKey')!.thisType, f);
+        getAnnotationOfType(library.getClass('MapKey')!.thisType, f);
     return mapKeyAnnotation == null
         ? f.name
         : mapKeyAnnotation.getField('key')!.toStringValue()!;
   }
 
   bool isCustomDeserializableType(Element e) {
-    return getAnnotationOfType(library.getType('CustomDeserialize')!.thisType, e) !=
+    return getAnnotationOfType(library.getClass('CustomDeserialize')!.thisType, e) !=
         null;
   }
 
@@ -127,7 +127,7 @@ class _DeserializationCodeGenerator extends StringBuffer {
 class DeserializationFactoryGenerator extends Generator {
   @override
   FutureOr<String> generate(LibraryReader library, BuildStep buildStep) {
-    var factoryClass = library.element.getType('CustomDeserializerFactory');
+    var factoryClass = library.element.getClass('CustomDeserializerFactory');
     if (factoryClass == null) {
       return '';
     } else {
@@ -145,7 +145,7 @@ class _DeserializationFactoryGenerator extends StringBuffer {
     writeln('@override');
     writeln('CustomDeserializer createDeserializer(Type modelClass) {');
     writeln('switch(modelClass) {');
-    l.definingCompilationUnit.types
+    l.definingCompilationUnit.classes
         .where((e) => e.metadata.isNotEmpty)
         .forEach((e) {
       writeln('case ${e.name}:');

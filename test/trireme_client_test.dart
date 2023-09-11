@@ -53,6 +53,8 @@ void main() {
       print(res);
       res = await client.getTorrentDetails(tid);
       print(res);
+      res = await client.getTorrentFileList(tid);
+      print(res);
       res = await client.getTorrentOptions(tid);
       print(res);
       res = await client.getConfig();

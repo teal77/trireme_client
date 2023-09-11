@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of trireme_deserialization;
+part of 'deserialization.dart';
 
 // **************************************************************************
 // DeserializationGenerator
@@ -27,7 +27,7 @@ class $TorrentListItemCustomDeserializer
     item.timeAdded = map['time_added'] as num;
     item.timeCompleted = map['completed_time'] as num;
     item.timeSeeding = map['seeding_time'] as int;
-    item.label = map['label'] as String;
+    item.label = map['label'] as String?;
     item.trackerHost = map['tracker_host'] as String;
     return item;
   }
@@ -80,9 +80,10 @@ class $FilterTreeCustomDeserializer extends CustomDeserializer<FilterTree> {
     var oAsMap = (o as Map<Object, Object?>);
     var map = oAsMap.cast<String, Object?>();
     var item = FilterTree();
-    item.statusFilters = (map['state'] as List).cast<Object>();
-    item.labelFilters = (map['label'] as List).cast<Object>();
-    item.trackerFilters = (map['tracker_host'] as List).cast<Object>();
+    item.statusFilters = (map['state'] as List? ?? List.empty()).cast<Object>();
+    item.labelFilters = (map['label'] as List? ?? List.empty()).cast<Object>();
+    item.trackerFilters =
+        (map['tracker_host'] as List? ?? List.empty()).cast<Object>();
     return item;
   }
 }
@@ -193,8 +194,10 @@ class $TorrentFilesCustomDeserializer extends CustomDeserializer<TorrentFiles> {
     var oAsMap = (o as Map<Object, Object?>);
     var map = oAsMap.cast<String, Object?>();
     var item = TorrentFiles();
-    item.filePriorities = (map['file_priorities'] as List).cast<int>();
-    item.fileProgress = (map['file_progress'] as List).cast<double>();
+    item.filePriorities =
+        (map['file_priorities'] as List? ?? List.empty()).cast<int>();
+    item.fileProgress =
+        (map['file_progress'] as List? ?? List.empty()).cast<double>();
     var deserializer = CustomDeserializerFactory()
         .createDeserializer(TorrentFile) as CustomDeserializer<TorrentFile>;
     item.files = (map['files'] as List<Object?>)

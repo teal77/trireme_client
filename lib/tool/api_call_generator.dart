@@ -170,7 +170,7 @@ class _ApiCallCodeGenerator extends StringBuffer {
   }
 
   String getApiName(LibraryElement library, MethodElement method) {
-    var annotation = getAnnotationOfType(library.getType('ApiName')!.thisType, method);
+    var annotation = getAnnotationOfType(library.getClass('ApiName')!.thisType, method);
     var apiNameStr = annotation!.getField('name')!.toStringValue();
     return apiNameStr!;
   }
@@ -184,7 +184,7 @@ class _ApiCallCodeGenerator extends StringBuffer {
   }
 
   bool isCustomDeserializingType(DartType type) {
-    var annotation = getAnnotationOfType(_libraryDeserialization!.getType('CustomDeserialize')!.thisType, type.element!);
+    var annotation = getAnnotationOfType(_libraryDeserialization!.getClass('CustomDeserialize')!.thisType, type.element!);
     return annotation != null;
   }
 

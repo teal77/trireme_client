@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of trireme_client;
+part of 'trireme_client.dart';
 
 // **************************************************************************
 // ApiCallGenerator
