@@ -145,7 +145,7 @@ class DelugeClient {
       }
     } else if (response[0] == rpcEvent) {
       var event = DelugeRpcEvent(
-          response[1] as String, response[2] as List<Object>);
+          response[1] as String, (response[2] as List<Object?>).cast<Object>());
       if (_streamController.hasListener) _streamController.add(event);
     } else {
       throw 'Unknown response type ${response[0]}';
