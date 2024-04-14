@@ -86,7 +86,7 @@ class TorrentListItem {
   late num timeAdded;
 
   @MapKey('completed_time')
-  late num timeCompleted;
+  late num? timeCompleted;
 
   @MapKey('seeding_time')
   late int timeSeeding;
@@ -157,7 +157,7 @@ class TorrentDetail {
   late num addedTime;
 
   @MapKey('completed_time')
-  late num timeCompleted;
+  late num? timeCompleted;
 
   late bool private;
 

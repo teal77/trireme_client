@@ -25,7 +25,7 @@ class $TorrentListItemCustomDeserializer
     item.isFinished = map['is_finished'] as bool;
     item.ratio = map['ratio'] as double;
     item.timeAdded = map['time_added'] as num;
-    item.timeCompleted = map['completed_time'] as num;
+    item.timeCompleted = map['completed_time'] as num?;
     item.timeSeeding = map['seeding_time'] as int;
     item.label = map['label'] as String?;
     item.trackerHost = map['tracker_host'] as String;
@@ -109,7 +109,7 @@ class $TorrentDetailCustomDeserializer
     item.activeTime = map['active_time'] as int;
     item.seedingTime = map['seeding_time'] as int;
     item.addedTime = map['time_added'] as num;
-    item.timeCompleted = map['completed_time'] as num;
+    item.timeCompleted = map['completed_time'] as num?;
     item.private = map['private'] as bool;
     item.uploadedInThisSession = map['total_payload_upload'] as int;
     item.totalUploaded = map['total_uploaded'] as int;
