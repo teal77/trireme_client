@@ -338,29 +338,9 @@ class TorrentOptions {
 
 @customDeserialize
 class Tracker {
-  @MapKey('send_stats')
-  late bool sendStats;
-
-  late int fails;
-
-  late bool verified;
-
   late String url;
 
-  @MapKey('fail_limit')
-  late int failLimit;
-
-  @MapKey('complete_sent')
-  late bool completeSent;
-
-  late int source;
-
-  @MapKey('start_sent')
-  late bool startSent;
-
   late int tier;
-
-  late bool updating;
 }
 
 @customDeserialize

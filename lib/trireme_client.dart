@@ -138,7 +138,7 @@ abstract class TriremeClient {
   Future setTorrentTrackers(String torrentId, List<Map> trackers);
 
   @ApiName('core.get_torrent_status')
-  Future<Response<Map<String, Object>>> getTorrentStatus(
+  Future<Response<Map<String, Object?>>> getTorrentStatus(
       String torrentId, List<String> keys);
 
   @ApiName('core.get_torrent_status')

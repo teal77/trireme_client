@@ -328,16 +328,8 @@ class $TrackerCustomDeserializer extends CustomDeserializer<Tracker> {
     var oAsMap = (o as Map<Object, Object?>);
     var map = oAsMap.cast<String, Object?>();
     var item = Tracker();
-    item.sendStats = map['send_stats'] as bool;
-    item.fails = map['fails'] as int;
-    item.verified = map['verified'] as bool;
     item.url = map['url'] as String;
-    item.failLimit = map['fail_limit'] as int;
-    item.completeSent = map['complete_sent'] as bool;
-    item.source = map['source'] as int;
-    item.startSent = map['start_sent'] as bool;
     item.tier = map['tier'] as int;
-    item.updating = map['updating'] as bool;
     return item;
   }
 }
