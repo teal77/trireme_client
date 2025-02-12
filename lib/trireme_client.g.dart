@@ -168,12 +168,12 @@ class _$TriremeClientImpl extends TriremeClient {
   }
 
   @override
-  Future<Response<Map<String, Object>>> getTorrentStatus(
+  Future<Response<Map<String, Object?>>> getTorrentStatus(
       String torrentId, List<String> keys) async {
     var result = await _client.rpcCall<Response<Object>>(
         'core.get_torrent_status', [torrentId, keys]);
     var resultUnwrapped = result.response as Map<Object, Object?>;
-    var result2 = resultUnwrapped.cast<String, Object>();
+    var result2 = resultUnwrapped.cast<String, Object?>();
     return Response(result.apiName, result.requestId, result2);
   }
 
