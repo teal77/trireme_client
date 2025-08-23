@@ -94,6 +94,9 @@ abstract class TriremeClient {
   @ApiName('core.resume_session')
   Future resumeSession();
 
+  @ApiName('core.is_session_paused')
+  Future<bool> isSessionPaused();
+
   @ApiName('core.add_torrent_file')
   Future<String> addTorrentFile(
       String fileName, String fileDump, Map<String, Object> options);

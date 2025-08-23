@@ -57,6 +57,13 @@ class _$TriremeClientImpl extends TriremeClient {
   }
 
   @override
+  Future<bool> isSessionPaused() async {
+    var result = await _client.rpcCall<bool>('core.is_session_paused');
+    var result2 = result;
+    return result2;
+  }
+
+  @override
   Future<String> addTorrentFile(
       String fileName, String fileDump, Map<String, Object> options) async {
     var result = await _client.rpcCall<String>(
