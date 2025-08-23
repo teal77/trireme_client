@@ -141,6 +141,7 @@ class $TorrentDetailCustomDeserializer
     item.nextAnnounce = map['next_announce'] as int;
     item.seedsPeersRatio = map['seeds_peers_ratio'] as double;
     item.distributedCopies = map['distributed_copies'] as double;
+    item.lastSeenComplete = map['last_seen_complete'] as int;
     return item;
   }
 }
@@ -186,6 +187,7 @@ const torrentDetailKeys = [
   'next_announce',
   'seeds_peers_ratio',
   'distributed_copies',
+  'last_seen_complete',
 ];
 
 class $TorrentFilesCustomDeserializer extends CustomDeserializer<TorrentFiles> {
@@ -335,16 +337,8 @@ class $TrackerCustomDeserializer extends CustomDeserializer<Tracker> {
 }
 
 const trackerKeys = [
-  'send_stats',
-  'fails',
-  'verified',
   'url',
-  'fail_limit',
-  'complete_sent',
-  'source',
-  'start_sent',
   'tier',
-  'updating',
 ];
 
 class $AddTorrentDefaultOptionsCustomDeserializer

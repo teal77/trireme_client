@@ -245,9 +245,12 @@ class TorrentDetail {
   @MapKey('distributed_copies')
   late double distributedCopies;
 
+  @MapKey('last_seen_complete')
+  late int lastSeenComplete;
+
   @override
   String toString() {
-    return 'TorrentDetail{name: $name, hash: $hash, comment: $comment, label: $label, files: $files, activeTime: $activeTime, seedingTime: $seedingTime, addedTime: $addedTime, private: $private, uploadedInThisSession: $uploadedInThisSession, totalUploaded: $totalUploaded, downloadedInThisSesssion: $downloadedInThisSesssion, totalDownloaded: $totalDownloaded, totalSize: $totalSize, totalWanted: $totalWanted, totalDone: $totalDone, downloadPayloadRate: $downloadPayloadRate, uploadPayloadRate: $uploadPayloadRate, tracker: $tracker, message: $message, trackerStatus: $trackerStatus, eta: $eta, ratio: $ratio, path: $path, trackerHost: $trackerHost, pieces: $pieces, pieceLength: $pieceLength, totalSeeds: $totalSeeds, connectedSeeds: $connectedSeeds, totalPeers: $totalPeers, connectedPeers: $connectedPeers, isAutoManaged: $isAutoManaged, isFinished: $isFinished, state: $state, progress: $progress, seedRank: $seedRank, nextAnnounce: $nextAnnounce, seedsPeersRatio: $seedsPeersRatio, distributedCopies: $distributedCopies}';
+    return 'TorrentDetail{name: $name, hash: $hash, comment: $comment, label: $label, files: $files, activeTime: $activeTime, seedingTime: $seedingTime, addedTime: $addedTime, private: $private, uploadedInThisSession: $uploadedInThisSession, totalUploaded: $totalUploaded, downloadedInThisSesssion: $downloadedInThisSesssion, totalDownloaded: $totalDownloaded, totalSize: $totalSize, totalWanted: $totalWanted, totalDone: $totalDone, downloadPayloadRate: $downloadPayloadRate, uploadPayloadRate: $uploadPayloadRate, tracker: $tracker, message: $message, trackerStatus: $trackerStatus, eta: $eta, ratio: $ratio, path: $path, trackerHost: $trackerHost, pieces: $pieces, pieceLength: $pieceLength, totalSeeds: $totalSeeds, connectedSeeds: $connectedSeeds, totalPeers: $totalPeers, connectedPeers: $connectedPeers, isAutoManaged: $isAutoManaged, isFinished: $isFinished, state: $state, progress: $progress, seedRank: $seedRank, nextAnnounce: $nextAnnounce, seedsPeersRatio: $seedsPeersRatio, distributedCopies: $distributedCopies, lastSeenComplete: $lastSeenComplete}';
   }
 }
 
