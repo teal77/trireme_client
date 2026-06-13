@@ -372,8 +372,6 @@ class Deluge2Connection extends DelugeConnection {
 
   static final int protocolVersion = 1;
 
-  int _responseLength = 0;
-
   Deluge2Connection(
       String host,
       int port,
@@ -402,31 +400,24 @@ class Deluge2Connection extends DelugeConnection {
 
   @override
   void receive(List<int> response) {
-    if (_partialData.isEmpty) {
-      if (response.length < headerSize) {
-        return;
-      }
-      if (response.first != protocolVersion) {
-        throw 'Unknown protocol version ${response.first}';
-      }
-      _responseLength =
-          Uint8List.fromList(response.getRange(1, headerSize).toList())
-              .buffer
-              .asByteData()
-              .getUint32(0);
-      _partialData.add(response.getRange(headerSize, response.length).toList());
-    } else {
-      _partialData.add(response);
-      if (response.first == protocolVersion) {
-        if (_partialData.length > _responseLength) {
-          _partialData.clear();
-          receive(response);
-        }
-      }
-    }
+    _partialData.add(response);
 
-    if (_partialData.length >= _responseLength) {
-      _responseCallback(_codec.decode(_partialData.takeBytes()));
+    while (_partialData.length >= headerSize) {
+      final data = _partialData.toBytes();
+      if (data[0] != protocolVersion) {
+        _partialData.clear();
+        throw 'Unknown protocol version ${data[0]}';
+      }
+      final messageLength = data.buffer.asByteData().getUint32(1);
+      final totalLength = headerSize + messageLength;
+      if (data.length < totalLength) return;
+
+      _responseCallback(_codec.decode(data.sublist(headerSize, totalLength)));
+
+      _partialData.clear();
+      if (totalLength < data.length) {
+        _partialData.add(data.sublist(totalLength));
+      }
     }
   }
 }
